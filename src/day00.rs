@@ -1,3 +1,5 @@
+// solution template
+
 pub fn part1(input: &str) -> i64 {
     input.len() as i64
 }
