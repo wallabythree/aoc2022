@@ -9,7 +9,7 @@ pub fn part1(input: &str) -> i64 {
 
         let opponent = bytes[i] as i64 - 64;
         let player = bytes[i + 2] as i64 - 87;
-        let round = ((player - opponent + 1) * 3).rem_euclid(9); 
+        let round = (player - opponent + 1).rem_euclid(3) * 3; 
 
         score += player + round;
     }
