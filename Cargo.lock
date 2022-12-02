@@ -18,7 +18,7 @@ name = "aoc2022"
 version = "0.1.0"
 dependencies = [
  "criterion",
- "rudolf",
+ "rudolf-rs",
 ]
 
 [[package]]
@@ -818,7 +818,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rudolf"
+name = "rudolf-rs"
 version = "0.1.0"
 dependencies = [
  "reqwest",

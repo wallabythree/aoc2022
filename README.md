@@ -1,4 +1,6 @@
 # Advent of Code 2022
 
-Solutions for Advent of Code 2022 in Rust.
+Solutions for Advent of Code 2022 in Rust. Relies on
+[rudolf-rs](https://github.com/wallabythree/rudolf-rs)
+to download and cache puzzle inputs.
 

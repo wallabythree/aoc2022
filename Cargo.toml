@@ -13,7 +13,7 @@ name = "aoc2022"
 path = "src/bin.rs"
 
 [dependencies]
-rudolf = { path = "../rudolf" } 
+rudolf-rs = { path = "../rudolf-rs" } 
 
 [dev-dependencies]
 criterion = "0.3"
