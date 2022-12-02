@@ -54,22 +54,6 @@ fn criterion_benchmark(c: &mut Criterion) {
             b.iter(|| day02::part2(black_box(&input)))
         }
     );
-
-    c.bench_function(
-        "day03-part1",
-        |b| { 
-            b.iter(|| day03::part1(black_box(&input)))
-        }
-    );
-
-    input = client.get(2022, 3).unwrap();
-    
-    c.bench_function(
-        "day03-part2",
-        |b| {
-            b.iter(|| day03::part2(black_box(&input)))
-        }
-    );
 }
 
 criterion_group!(benches, criterion_benchmark);

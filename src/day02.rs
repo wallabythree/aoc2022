@@ -6,33 +6,12 @@ pub fn part1(input: &str) -> i64 {
 
     for row in 0..rows {
         let i = row * 4;
-        let player = (bytes[i + 2] - 87) as i64;
-        let opponent = (bytes[i] - 64) as i64;
 
-        score += player;
+        let opponent = bytes[i] as i64 - 64;
+        let player = bytes[i + 2] as i64 - 87;
+        let round = ((player - opponent + 1) * 3).rem_euclid(9); 
 
-        let mut round = 0;
-
-        match opponent {
-            1 => match player {
-                2 => round = 6,
-                1 => round = 3,
-                _ => ()
-            },
-            2 => match player {
-                3 => round = 6,
-                2 => round = 3,
-                _ => ()
-            }
-            3 => match player {
-                1 => round = 6,
-                3 => round = 3,
-                _ => ()
-            }
-            _ => ()
-        }
-
-        score += round;
+        score += player + round;
     }
     score
 }
@@ -45,33 +24,12 @@ pub fn part2(input: &str) -> i64 {
 
     for row in 0..rows {
         let i = row * 4;
-        let opponent = (bytes[i] - 64) as i64;
-        let round = ((bytes[i + 2] - 87) as i64 - 1) * 3;
+        let opponent = bytes[i] as i64 - 64;
+        let round = (bytes[i + 2] as i64 - 87 - 1) * 3;
+        let player = (opponent + bytes[i + 2] as i64 - 87 - 2 - 1)
+            .rem_euclid(3) + 1; 
 
-        score += round;
-
-        let mut player = 0;
-
-        match opponent {
-            1 => match round {
-                6 => player = 2,
-                3 => player = 1,
-                _ => player = 3
-            },
-            2 => match round {
-                6 => player = 3,
-                3 => player = 2,
-                _ => player = 1
-            },
-            3 => match round {
-                6 => player = 1,
-                3 => player = 3,
-                _ => player = 2
-            },
-            _ => ()
-        }
-
-        score += player;
+        score += round + player;
     }
     score
 }
