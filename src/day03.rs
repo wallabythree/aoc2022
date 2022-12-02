@@ -8,7 +8,7 @@ pub fn part2(input: &str) -> i64 {
 
 #[cfg(test)]
 mod tests {
-    use crate::day00::{part1, part2};
+    use crate::day03::{part1, part2};
 
     const TEST_INPUT: &str = "";
 
