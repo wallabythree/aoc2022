@@ -3,7 +3,7 @@ pub fn part1(input: &str) -> i32 {
         .split("\n\n")
         .map(|elf| {
             elf
-                .split("\n")
+                .split('\n')
                 .map(|fruit| fruit.parse::<i32>().unwrap_or(0))
                 .sum::<i32>()
         })
@@ -16,7 +16,7 @@ pub fn part2(input: &str) -> i32 {
         .split("\n\n")
         .map(|elf| {
             elf
-                .split("\n")
+                .split('\n')
                 .map(|fruit| fruit.parse::<i32>().unwrap_or(0))
                 .sum::<i32>()
         });
