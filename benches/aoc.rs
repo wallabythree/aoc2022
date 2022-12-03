@@ -1,7 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::env;
 use rudolf_rs;
-use solutions::{day00, day01, day02};
+use solutions::{day00, day01, day02, day03};
 
 fn criterion_benchmark(c: &mut Criterion) {
     let session_key = env::var("AOC_SESSION").unwrap();
@@ -50,6 +50,22 @@ fn criterion_benchmark(c: &mut Criterion) {
         "day02part2",
         |b| {
             b.iter(|| day02::part2(black_box(&input)))
+        }
+    );
+
+    input = client.get(2022, 3).unwrap();
+
+    c.bench_function(
+        "day03part1",
+        |b| { 
+            b.iter(|| day03::part1(black_box(&input)))
+        }
+    );
+    
+    c.bench_function(
+        "day03part2",
+        |b| {
+            b.iter(|| day03::part2(black_box(&input)))
         }
     );
 }

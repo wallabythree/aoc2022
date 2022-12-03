@@ -24,6 +24,7 @@ pub fn part2(input: &str) -> i64 {
 
     for row in 0..rows {
         let i = row * 4;
+
         let opponent = bytes[i] as i64 - 64;
         let round = (bytes[i + 2] as i64 - 87 - 1) * 3;
         let player = (opponent + bytes[i + 2] as i64 - 87 - 2 - 1)
