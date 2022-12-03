@@ -10,8 +10,7 @@ Regular solutions.
 
 ## Optimised-for-speed
 
-Solutions optimised for speed. The code may be more verbose or convoluted than
-for regular solutions.
+Solutions optimised for speed.
 
 ## Speeds
 
