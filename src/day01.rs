@@ -1,44 +1,30 @@
-pub fn part1(input: &str) -> i32 {
+pub fn part1(input: &str) -> u64 {
     input
         .split("\n\n")
         .map(|elf| {
             elf
                 .split('\n')
-                .map(|fruit| fruit.parse::<i32>().unwrap_or(0))
-                .sum::<i32>()
+                .map(|fruit| fruit.parse::<u64>().unwrap_or(0))
+                .sum::<u64>()
         })
         .max()
         .unwrap()
 }
 
-pub fn part2(input: &str) -> i32 {
-    let elves = input
+pub fn part2(input: &str) -> u64 {
+    let mut ranked = input
         .split("\n\n")
         .map(|elf| {
             elf
                 .split('\n')
-                .map(|fruit| fruit.parse::<i32>().unwrap_or(0))
-                .sum::<i32>()
-        });
+                .map(|fruit| fruit.parse::<u64>().unwrap_or(0))
+                .sum::<u64>()
+        })
+        .collect::<Vec<u64>>();
 
-    let mut top_elves: [i32; 3] = [0; 3];
+    ranked.sort_by(|a, b| b.cmp(a));
 
-    for elf in elves {
-        for i in 0..top_elves.len() {
-
-            if elf > top_elves[i] {
-
-                for j in ((i + 1)..top_elves.len()).rev() {
-                    top_elves[j] = top_elves[j - 1];
-                }
-
-                top_elves[i] = elf;
-                break;
-            }
-        }
-    }
-
-    top_elves.iter().sum()
+    ranked[..3].iter().sum()
 }
 
 #[cfg(test)]
