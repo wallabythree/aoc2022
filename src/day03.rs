@@ -31,21 +31,20 @@ pub fn part1(input: &str) -> u64 {
 }
 
 pub fn part2(input: &str) -> u64 {
-    let elves: Vec<&str> = input.split('\n').collect();
-    let groups = elves.chunks(3);
-
-    let mut sum: u64 = 0;
-
-    for group in groups {
-        for c in group[0].chars() {
-            if group[1].contains(c) && group[2].contains(c) {
-                sum += c.priority();
-                break;
+    input
+        .split('\n')
+        .collect::<Vec<&str>>()
+        .chunks(3)
+        .map(|group| {
+            for c in group[0].chars() {
+                if group[1].contains(c) && group[2].contains(c) {
+                    return c.priority();
+                }
             }
-        }
-    }
 
-    sum
+            0
+        })
+        .sum()
 }
 
 #[cfg(test)]
