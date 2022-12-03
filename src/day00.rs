@@ -1,11 +1,11 @@
 // solution template
 
-pub fn part1(input: &str) -> i64 {
-    input.len() as i64
+pub fn part1(input: &str) -> u64 {
+    input.len() as u64
 }
 
-pub fn part2(input: &str) -> i64 {
-    input.len() as i64
+pub fn part2(input: &str) -> u64 {
+    input.len() as u64
 }
 
 #[cfg(test)]
