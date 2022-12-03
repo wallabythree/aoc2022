@@ -1,27 +1,27 @@
-pub fn part1(input: &str) -> i32 {
+pub fn part1(input: &str) -> u64 {
     input
         .split("\n\n")
         .map(|elf| {
             elf
                 .split('\n')
-                .map(|fruit| fruit.parse::<i32>().unwrap_or(0))
-                .sum::<i32>()
+                .map(|fruit| fruit.parse::<u64>().unwrap_or(0))
+                .sum::<u64>()
         })
         .max()
         .unwrap()
 }
 
-pub fn part2(input: &str) -> i32 {
+pub fn part2(input: &str) -> u64 {
     let elves = input
         .split("\n\n")
         .map(|elf| {
             elf
                 .split('\n')
-                .map(|fruit| fruit.parse::<i32>().unwrap_or(0))
-                .sum::<i32>()
+                .map(|fruit| fruit.parse::<u64>().unwrap_or(0))
+                .sum::<u64>()
         });
 
-    let mut top_elves: [i32; 3] = [0; 3];
+    let mut top_elves = [0u64; 3];
 
     for elf in elves {
         for i in 0..top_elves.len() {
