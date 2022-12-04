@@ -37,13 +37,8 @@ pub fn part2(input: &str) -> u64 {
 mod tests {
     use crate::day04::{part1, part2};
 
-    const TEST_INPUT: &str = "2-4,6-8
-2-3,4-5
-5-7,7-9
-2-8,3-7
-6-6,4-6
-2-6,4-8
-";
+    const TEST_INPUT: &str = "2-4,6-8\n2-3,4-5\n5-7,7-9\n\
+                              2-8,3-7\n6-6,4-6\n2-6,4-8\n";
 
     #[test]
     fn test_part1() {
