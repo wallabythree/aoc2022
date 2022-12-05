@@ -16,7 +16,7 @@ pub fn part1(input: &str) -> String {
             let row = row_s.as_bytes();
 
             for i in 0..stack_count {
-                if row[i * 4 + 2] != b' ' {
+                if row[i * 4 + 1] != b' ' {
                     stacks[i].push(row[i * 4 + 1]);
                 }
             }
