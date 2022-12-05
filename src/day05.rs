@@ -16,8 +16,10 @@ pub fn part1(input: &str) -> String {
             let row = row_s.as_bytes();
 
             for i in 0..stack_count {
-                if row[i * 4 + 1] != b' ' {
-                    stacks[i].push(row[i * 4 + 1]);
+                let c = row[i * 4 + 1];
+
+                if c != b' ' {
+                    stacks[i].push(c);
                 }
             }
         });
@@ -68,8 +70,10 @@ pub fn part2(input: &str) -> String {
             let row = row_s.as_bytes();
 
             for i in 0..stack_count {
-                if row[i * 4 + 1] != b' ' {
-                    stacks[i].push(row[i * 4 + 1]);
+                let c = row[i * 4 + 1];
+
+                if c != b' ' {
+                    stacks[i].push(c);
                 }
             }
         });
