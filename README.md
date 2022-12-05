@@ -20,4 +20,5 @@ day | part1 | part2 | part1 (optimised) | part2 (optimised)
 02 | 4.25 µs | 4.1 µs | | 
 03 | 17.31 µs | 17.83 µs | 6.69 µs | 6.33 µs
 04 | 27.95 µs | 23.35 µs | |
+05 | 16.61 µs | 26.38 µs | |
 
