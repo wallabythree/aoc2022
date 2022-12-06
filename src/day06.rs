@@ -1,24 +1,33 @@
 fn find_marker(input: &str, packet_len: usize) -> Result<usize, ()> {
-    for i in packet_len..input.len() {
-        let chunk = &input.as_bytes()[(i - packet_len)..i];
-        let mut packet_start = true;
+    let bytes = input.as_bytes();
 
-        // create hash table
-        let mut table = [0u8; u8::MAX as usize];
+    // create hash table
+    let mut table = [0u8; u8::MAX as usize];
+    // count hash collisions
+    let mut collisions = 0;
 
-        for b in chunk.iter() {
-            if table[*b as usize] != 0 {
-                packet_start = false;
-                break;
+    for (i, b) in bytes.iter().enumerate() {
+        table[*b as usize] += 1;
+
+        if table[*b as usize] > 1 {
+            collisions += 1;
+        }
+
+        if i < packet_len {
+            continue;
+        }
+
+        let p = bytes[i - packet_len]; // byte leaving packet scope
+
+        if table[p as usize] > 1 {
+            collisions -= 1;
+
+            if collisions == 0 {
+                return Ok(i + 1);
             }
-        
-            // populate hash table
-            table[*b as usize] += 1;
         }
 
-        if packet_start {
-            return Ok(i);
-        }
+        table[p as usize] -= 1;
     }
 
     Err(())
