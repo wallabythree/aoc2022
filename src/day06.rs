@@ -1,5 +1,5 @@
 fn find_marker(input: &str, packet_len: usize) -> Result<usize, ()> {
-    for i in packet_len..(input.len()) {
+    for i in packet_len..input.len() {
         let chunk = &input.as_bytes()[(i - packet_len)..i];
         let mut packet_start = true;
 
