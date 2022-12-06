@@ -24,7 +24,6 @@ fn find_marker(input: &str, packet_len: usize) -> Result<usize, ()> {
     Err(())
 }
 
-
 pub fn part1(input: &str) -> usize {
     find_marker(input, 4).unwrap()
 }
