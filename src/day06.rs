@@ -32,7 +32,6 @@ pub fn part2(input: &str) -> usize {
     find_marker(input, 14).unwrap()
 }
 
-
 #[cfg(test)]
 mod tests {
     use crate::day06::{part1, part2};
