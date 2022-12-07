@@ -34,8 +34,6 @@ impl TreeNode {
             value: NodeType::Directory { children: vec![] }
         }
     }
-
-
 }
 
 struct TreeArena {
@@ -75,8 +73,6 @@ impl TreeArena {
         }      
     }
 }
-
-
 
 fn parse_filetree(input: &str) -> TreeArena {
     // initialize tree
