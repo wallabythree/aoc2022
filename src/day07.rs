@@ -158,30 +158,29 @@ pub fn part2(input: &str) -> usize {
 mod tests {
     use crate::day07::{part1, part2};
 
-    const TEST_INPUT: &str = "$ cd /
-$ ls
-dir a
-14848514 b.txt
-8504156 c.dat
-dir d
-$ cd a
-$ ls
-dir e
-29116 f
-2557 g
-62596 h.lst
-$ cd e
-$ ls
-584 i
-$ cd ..
-$ cd ..
-$ cd d
-$ ls
-4060174 j
-8033020 d.log
-5626152 d.ext
-7214296 k
-";
+    const TEST_INPUT: &str = "$ cd /\n\
+                              $ ls\n\
+                              dir a\n\
+                              14848514 b.txt\n\
+                              8504156 c.dat\n\
+                              dir d\n\
+                              $ cd a\n\
+                              $ ls\n\
+                              dir e\n\
+                              29116 f\n\
+                              2557 g\n\
+                              62596 h.lst\n\
+                              $ cd e\n\
+                              $ ls\n\
+                              584 i\n\
+                              $ cd ..\n\
+                              $ cd ..\n\
+                              $ cd d\n\
+                              $ ls\n\
+                              4060174 j\n\
+                              8033020 d.log\n\
+                              5626152 d.ext\n\
+                              7214296 k\n";
 
     #[test]
     fn test_part1() {
