@@ -16,6 +16,28 @@ struct TreeNode {
     value: NodeType
 }
 
+impl TreeNode {
+    fn new_file(name: String, size: usize, parent: Option<usize>) -> Self {
+        Self {
+            index: 0,
+            name,
+            parent,
+            value: NodeType::File { size }
+        }
+    }
+
+    fn new_directory(name: String, parent: Option<usize>) -> Self {
+        Self {
+            index: 0,
+            name,
+            parent,
+            value: NodeType::Directory { children: vec![] }
+        }
+    }
+
+
+}
+
 struct TreeArena {
     arena: Vec<TreeNode>
 }
@@ -28,7 +50,9 @@ impl TreeArena {
         self.arena.push(node);
 
         if let Some(parent) = self.arena[index].parent {
-            if let NodeType::Directory { children } = &mut self.arena[parent].value {
+            if let NodeType::Directory { 
+                children
+            } = &mut self.arena[parent].value {
                 children.push(index);
             }
         }
@@ -36,7 +60,7 @@ impl TreeArena {
         Ok(index)
     }
 
-    // recursive node size calculation function
+    // calculate node size recursively
     fn size(&self, index: usize) -> usize {
         match &self.arena[index].value {
             NodeType::Directory { children }  => {
@@ -67,46 +91,39 @@ fn parse_filetree(input: &str) -> TreeArena {
             value: NodeType::Directory { children: vec![] }
         }).unwrap();
 
+    // parse input line by line
     input
         .trim()
         .split('\n')
         .for_each(|line| {
             let args = line.split(' ').collect::<Vec<_>>();
 
-            if args[0].starts_with('$') {
-                match args[1] {
-                    "cd" => match args[2] {
-                        "/" => cwd = 0,
-                        ".." => if let Some(index) = tree.arena[cwd].parent {
-                            cwd = index;
-                        },
-                        _ => {
-                            let new_directory = TreeNode {
-                                index: 0,
-                                name: args[2].to_string(),
-                                parent: Some(cwd),
-                                value: NodeType::Directory { children: vec![] }
-                            };
-                            if let Ok(index) = tree.push(new_directory) {
-                                cwd = index;
-                            }
-
-                        }
+            if args[0] == "$"  && args[1] == "cd" { 
+                // navigate directories
+                match args[2] {
+                    "/" => cwd = 0,
+                    ".." => if let Some(index) = tree.arena[cwd].parent {
+                        cwd = index;
                     },
-                    _ => ()
+                    _ => {
+                        // add new directory to tree
+                        let name = args[2].to_string();
+                        let new_dir = TreeNode::new_directory(name, Some(cwd));
+
+                        if let Ok(index) = tree.push(new_dir) {
+                            cwd = index;
+                        }
+                    }
                 }
-            } else if args[0].chars().nth(0).unwrap().is_digit(10) {
+
+            } else if args[0].as_bytes()[0].is_ascii_digit() {
+                // add new file to tree
                 let (name, size) = (
                     args[1].to_string(),
                     args[0].parse::<usize>().unwrap()
                 );
 
-                let file = TreeNode {
-                    index: 0,
-                    name,
-                    parent: Some(cwd),
-                    value: NodeType::File { size }
-                };
+                let file = TreeNode::new_file(name, size, Some(cwd));
 
                 tree.push(file).unwrap();
             }
@@ -121,10 +138,7 @@ pub fn part1(input: &str) -> usize {
     tree
         .arena
         .iter()
-        .filter(|entry| match entry.value {
-            NodeType::Directory{ children: _ } => true,
-            _ => false
-        })
+        .filter(|entry| matches!(entry.value, NodeType::Directory {children: _}))
         .map(|directory| tree.size(directory.index))
         .filter(|size| *size <= 100000)
         .sum()
@@ -135,16 +149,12 @@ pub fn part2(input: &str) -> usize {
     const NEEDED: usize = 30000000;
 
     let tree = parse_filetree(input);
-
     let used = tree.size(0);
 
     let mut dir_sizes = tree
         .arena
         .iter()
-        .filter(|entry| match entry.value {
-            NodeType::Directory{ children: _ } => true,
-            _ => false
-        })
+        .filter(|entry| matches!(entry.value, NodeType::Directory {children: _}))
         .map(|directory| tree.size(directory.index))
         .collect::<Vec<_>>();
 
