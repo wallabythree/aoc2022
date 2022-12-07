@@ -149,7 +149,10 @@ pub fn part2(input: &str) -> usize {
 
     dir_sizes.sort();
 
-    *dir_sizes.iter().find(|size| TOTAL - used + *size >= NEEDED).unwrap()
+    *dir_sizes
+        .iter()
+        .find(|size| TOTAL - used + *size >= NEEDED)
+        .unwrap()
 }
 
 #[cfg(test)]
