@@ -41,7 +41,7 @@ struct TreeArena {
 }
 
 impl TreeArena {
-    fn push(&mut self, mut node: TreeNode) -> Result<usize, ()> {
+    fn push(&mut self, mut node: TreeNode) -> usize {
         let index = self.arena.len();
         node.index = index;
 
@@ -55,7 +55,7 @@ impl TreeArena {
             }
         }
 
-        Ok(index)
+        index
     }
 
     // calculate node size recursively
@@ -80,7 +80,7 @@ fn parse_filetree(input: &str) -> TreeArena {
 
     // add root directory and set working directory
     let root_dir = TreeNode::new_directory("/".to_string(), None);
-    let mut cwd = tree.push(root_dir).unwrap();
+    let mut cwd = tree.push(root_dir);
 
     // parse input line by line
     input
@@ -101,9 +101,7 @@ fn parse_filetree(input: &str) -> TreeArena {
                         let name = args[2].to_string();
                         let new_dir = TreeNode::new_directory(name, Some(cwd));
 
-                        if let Ok(index) = tree.push(new_dir) {
-                            cwd = index;
-                        }
+                        cwd = tree.push(new_dir);
                     }
                 }
 
@@ -116,7 +114,7 @@ fn parse_filetree(input: &str) -> TreeArena {
 
                 let file = TreeNode::new_file(name, size, Some(cwd));
 
-                tree.push(file).unwrap();
+                tree.push(file);
             }
         });
 
