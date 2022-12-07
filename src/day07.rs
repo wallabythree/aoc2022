@@ -79,13 +79,8 @@ fn parse_filetree(input: &str) -> TreeArena {
     let mut tree = TreeArena { arena: Vec::new() };
 
     // add root directory and set working directory
-    let mut cwd = tree.push(
-        TreeNode { 
-            index: 0,
-            name: String::from("/"),
-            parent: None,
-            value: NodeType::Directory { children: vec![] }
-        }).unwrap();
+    let root_dir = TreeNode::new_directory("/".to_string(), None);
+    let mut cwd = tree.push(root_dir).unwrap();
 
     // parse input line by line
     input
