@@ -18,12 +18,7 @@ struct TreeNode {
 
 impl TreeNode {
     fn new_file(name: String, size: usize, parent: Option<usize>) -> Self {
-        Self {
-            index: 0,
-            name,
-            parent,
-            value: NodeType::File { size }
-        }
+        Self { index: 0, name, parent, value: NodeType::File { size } }
     }
 
     fn new_directory(name: String, parent: Option<usize>) -> Self {
@@ -67,9 +62,7 @@ impl TreeArena {
                     .map(|child_index| self.size(*child_index))
                     .sum()
             },
-            NodeType::File { size } => {
-                *size
-            }
+            NodeType::File { size } => { *size }
         }      
     }
 }
