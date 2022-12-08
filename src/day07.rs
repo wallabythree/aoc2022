@@ -1,8 +1,5 @@
 // Idea for tree arena:
 // https://dev.to/deciduously/no-more-tears-no-more-knots-arena-allocated-trees-in-rust-44k6
-// https://fkohlgrueber.github.io/blog/tree-structure-of-file-systems/
-//
-// However, please don't blame them for this mess.
 
 enum NodeType {
     Directory { children: Vec<usize> },
