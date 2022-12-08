@@ -63,13 +63,8 @@ pub fn part1(input: &str) -> usize {
 
     let mut visible = 0;
 
-    // count edges
-    visible += grid.rows.len() * 2;
-    visible += (grid.rows.first().unwrap().len() - 2) * 2;
-
-    // count interior
-    for y in 1..(grid.rows.len() - 1) {
-        for x in 1..(grid.rows.len() - 1) {
+    for y in 0..grid.rows.len() {
+        for x in 0..grid.rows.len() {
             if grid.is_visible(x, y) {
                 visible += 1;
             }
