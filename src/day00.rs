@@ -1,16 +1,16 @@
 // solution template
 
-pub fn part1(input: &str) -> u64 {
-    input.len() as u64
+pub fn part1(input: &str) -> usize {
+    input.len()
 }
 
-pub fn part2(input: &str) -> u64 {
-    input.len() as u64
+pub fn part2(input: &str) -> usize {
+    input.len()
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::day00::{part1, part2};
+    use super::{part1, part2};
 
     const TEST_INPUT: &str = "";
 
@@ -21,7 +21,7 @@ mod tests {
     
     #[test]
     fn test_part2() {
-        assert_eq!(part2(TEST_INPUT), 0);
+        assert_eq!(part2(TEST_INPUT), TEST_INPUT.len());
     }
 }
 
