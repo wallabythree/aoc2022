@@ -21,7 +21,6 @@ impl Rope {
             _ => ()
         }
 
-
         for i in 1..self.knots.len() {
             let head = self.knots[i - 1];
             let tail = &mut self.knots[i];
