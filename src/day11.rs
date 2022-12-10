@@ -1,5 +1,3 @@
-// solution template
-
 pub fn part1(input: &str) -> usize {
     input.len()
 }
