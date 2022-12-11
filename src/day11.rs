@@ -1,13 +1,11 @@
 use std::collections::VecDeque;
 
-#[derive(Debug)]
 enum Operation {
-    Addend(usize),
-    Exponent(usize),
-    Multiplier(usize)
+    Addition(usize),
+    Exponentiation(u32),
+    Multiplication(usize)
 }
 
-#[derive(Debug)]
 struct Monkey {
     items: VecDeque<usize>,
     operation: Operation,
@@ -34,10 +32,14 @@ impl Monkey {
 
         let operation = match operator {
             "*" => match operand {
-                "old" => Operation::Exponent(2),
-                multiplier => Operation::Multiplier(multiplier.parse().unwrap())
+                "old" => {
+                    Operation::Exponentiation(2)
+                },
+                multiplier => {
+                    Operation::Multiplication(multiplier.parse().unwrap())
+                }
             },
-            _ => Operation::Addend(operand.parse().unwrap())
+            _ => Operation::Addition(operand.parse().unwrap())
         };
 
         let divisor: usize = parts[7]
@@ -65,7 +67,6 @@ impl Monkey {
     }
 }
 
-#[derive(Debug)]
 struct Troop {
     monkeys: Vec<Monkey>,
 }
@@ -92,9 +93,9 @@ impl Troop {
             while let Some(mut item) = monkeys[i].items.pop_front() {
 
                 item = match monkeys[i].operation {
-                    Operation::Exponent(exponent) => item.pow(exponent as u32),
-                    Operation::Multiplier(multiplier) => item * multiplier,
-                    Operation::Addend(addend) => item + addend,
+                    Operation::Addition(addend) => item + addend,
+                    Operation::Exponentiation(exponent) => item.pow(exponent),
+                    Operation::Multiplication(multiplier) => item * multiplier,
                 };
 
                 if let Some(divisor) = worry_divisor {
