@@ -27,4 +27,5 @@ day | part1 | part2 | part1 (optimised) | part2 (optimised)
 09 | 141.76 µs | 526.75 µs | | 
 10 | 1.51 µs | 1.70 µs | | 
 11 | 10.76 µs | 2968.2 µs | | 
+12 | 30.98 µs | 21.03 µs | | 
 
