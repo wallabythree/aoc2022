@@ -1,7 +1,7 @@
 use core::cmp::Ordering;
 
 // recursive list
-#[derive(Eq,PartialEq)]
+#[derive(Clone,Eq,PartialEq)]
 enum ListItem {
     Value(u8),
     List(Vec<ListItem>)
@@ -148,15 +148,13 @@ pub fn part2(input: &str) -> usize {
         .map(|packet| parse_list(packet).unwrap())
         .collect::<Vec<_>>();
 
-    packets.push(parse_list("[[2]]").unwrap());
-    packets.push(parse_list("[[6]]").unwrap());
-
-    packets.sort();
-
     let dividers = [
         parse_list("[[2]]").unwrap(),
         parse_list("[[6]]").unwrap()
     ];
+    dividers.iter().for_each(|divider| packets.push(divider.clone()));
+
+    packets.sort();
 
     packets
         .iter()
