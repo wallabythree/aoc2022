@@ -114,7 +114,7 @@ fn parse_list(input: &str) -> Result<ListItem, ()> {
 
     for elem in elems {
         if elem.starts_with('[') {
-            // recursive if element contains an array
+            // recurse if element contains a list
             list.push(parse_list(elem).unwrap());
         } else {
             // base case
@@ -148,7 +148,6 @@ pub fn part1(input: &str) -> usize {
 }
 
 pub fn part2(input: &str) -> usize {
-
     let mut packets = input
         .lines()
         .filter(|line| !line.is_empty())
