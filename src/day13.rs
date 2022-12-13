@@ -1,7 +1,7 @@
 use core::cmp::Ordering;
 
 // recursive list
-#[derive(Clone,Eq)]
+#[derive(Eq,PartialEq)]
 enum ListItem {
     Value(u8),
     List(Vec<ListItem>)
@@ -65,12 +65,6 @@ impl Ord for ListItem {
 impl PartialOrd for ListItem {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
-    }
-}
-
-impl PartialEq for ListItem {
-    fn eq(&self, other: &Self) -> bool {
-        self.cmp(other) == Ordering::Equal
     }
 }
 
