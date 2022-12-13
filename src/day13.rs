@@ -74,6 +74,7 @@ impl PartialEq for ListItem {
     }
 }
 
+// recursive parser
 fn parse_list(input: &str) -> Result<ListItem, ()> {
     let mut depth = 0;
     let mut elems: Vec<&str> = vec![];
