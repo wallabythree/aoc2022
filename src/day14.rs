@@ -9,7 +9,7 @@ enum Direction {
     Right,
 }
 
-#[derive(Clone,PartialEq)]
+#[derive(Copy,Clone,PartialEq)]
 enum Object {
     Rock,
     Sand,
@@ -23,12 +23,12 @@ struct Coord {
 }
 
 struct Cave {
-    grid: Vec<Vec<Object>>
+    grid: [[Object; COLS]; ROWS]
 }
 
 impl Cave {
     fn from(input: &str) -> Result<Self, ()> {
-        let mut grid = vec![vec![Object::Air; COLS]; ROWS];
+        let mut grid = [[Object::Air; COLS]; ROWS];
 
         input
             .trim()
@@ -94,7 +94,7 @@ impl Cave {
             }
         }
 
-        self.grid[floor_y] = vec![Object::Rock; COLS];
+        self.grid[floor_y] = [Object::Rock; COLS];
     }
 
     fn fill_with_sand(&mut self) -> usize {
