@@ -70,9 +70,6 @@ impl PartialOrd for ListItem {
 
 // recursive parser
 fn parse_list(input: &str) -> Result<ListItem, ()> {
-    let mut depth = 0;
-    let mut elems: Vec<&str> = vec![];
-    let mut offset = 0;
 
     if !input.starts_with('[') && input.ends_with(']') {
         return Err(());
@@ -85,7 +82,9 @@ fn parse_list(input: &str) -> Result<ListItem, ()> {
         return Ok(ListItem::List(vec![]));
     }
 
-    let mut list: Vec<ListItem> = vec![]; 
+    let mut depth = 0;
+    let mut position = 0;
+    let mut elems: Vec<&str> = vec![];
 
     for (i, c) in input.chars().enumerate() {
         match c {
@@ -95,23 +94,25 @@ fn parse_list(input: &str) -> Result<ListItem, ()> {
         }
         
         if c == ',' && depth == 0 {
-            elems.push(&input[offset..i]);
-            offset = i + 1;
+            elems.push(&input[position..i]);
+            position = i + 1;
         }
     }
 
-    if offset == 0 {
+    if position == 0 {
         elems.push(input);
     } else {
-        elems.push(&input[offset..]);
+        elems.push(&input[position..]);
     }
+
+    let mut list: Vec<ListItem> = vec![]; 
 
     for elem in elems {
         if elem.starts_with('[') {
             // recurse if element contains a list
             list.push(parse_list(elem).unwrap());
         } else {
-            // base case
+            // base case if element is a value
             let value = ListItem::Value(elem.parse::<u8>().unwrap());
             list.push(value);
         }
