@@ -29,17 +29,17 @@ impl LineSegment {
     }
 
     fn intersect(&self, other: &Self) -> Option<Vertex> {
-        let (mut left, mut right) = (self.clone(), other.clone());
+        let (mut left, mut right) = (*self, *other);
 
         // segments with same slope have none or many solutions
         if left.slope == other.slope {
             return None;
         }
 
-        left.slope = left.slope - right.slope;
+        left.slope -= right.slope;
         right.slope = 0.0;
 
-        right.constant = right.constant - left.constant;
+        right.constant -= left.constant;
         left.constant = 0.0;
 
         let x = right.constant / left.slope;
@@ -238,14 +238,10 @@ fn day15_part1(input: &str, y: i64) -> usize {
     let mut joined_ranges: Vec<(i64, i64)> = vec![];
 
     while let Some(mut range) = ranges.pop() {
-        loop {
-            if let Some(inner_range) = ranges.last() {
-                if range.1 >= inner_range.0 {
-                    range.1 = range.1.max(inner_range.1);
-                    ranges.pop();
-                } else {
-                    break;
-                }
+        while let Some(inner_range) = ranges.last() {
+            if range.1 >= inner_range.0 {
+                range.1 = range.1.max(inner_range.1);
+                ranges.pop();
             } else {
                 break;
             }
@@ -293,9 +289,13 @@ pub fn day15_part2(input: &str, range: (f64, f64)) -> i64 {
             if let Some(intersections) = square.intersect_square(other_square) {
                 for intersection in intersections {
                     if range.contains(intersection)
-                        && squares.iter().all(|square| !square.contains(intersection)) {
-                            return (intersection.x * 4000000.0 + intersection.y) as i64;
-                        }
+                        && squares
+                            .iter()
+                            .all(|square| !square.contains(intersection)
+                    ) {
+                        let freq = intersection.x * 4000000.0 + intersection.y;
+                        return freq as i64;
+                    }
                 }
             }
         }
@@ -316,20 +316,21 @@ pub fn part2(input: &str) -> i64 {
 mod tests {
     use super::{day15_part1, day15_part2};
 
-    const TEST_INPUT: &str = "Sensor at x=2, y=18: closest beacon is at x=-2, y=15\n\
-                              Sensor at x=9, y=16: closest beacon is at x=10, y=16\n\
-                              Sensor at x=13, y=2: closest beacon is at x=15, y=3\n\
-                              Sensor at x=12, y=14: closest beacon is at x=10, y=16\n\
-                              Sensor at x=10, y=20: closest beacon is at x=10, y=16\n\
-                              Sensor at x=14, y=17: closest beacon is at x=10, y=16\n\
-                              Sensor at x=8, y=7: closest beacon is at x=2, y=10\n\
-                              Sensor at x=2, y=0: closest beacon is at x=2, y=10\n\
-                              Sensor at x=0, y=11: closest beacon is at x=2, y=10\n\
-                              Sensor at x=20, y=14: closest beacon is at x=25, y=17\n\
-                              Sensor at x=17, y=20: closest beacon is at x=21, y=22\n\
-                              Sensor at x=16, y=7: closest beacon is at x=15, y=3\n\
-                              Sensor at x=14, y=3: closest beacon is at x=15, y=3\n\
-                              Sensor at x=20, y=1: closest beacon is at x=15, y=3\n";
+    const TEST_INPUT: &str = 
+        "Sensor at x=2, y=18: closest beacon is at x=-2, y=15\n\
+         Sensor at x=9, y=16: closest beacon is at x=10, y=16\n\
+         Sensor at x=13, y=2: closest beacon is at x=15, y=3\n\
+         Sensor at x=12, y=14: closest beacon is at x=10, y=16\n\
+         Sensor at x=10, y=20: closest beacon is at x=10, y=16\n\
+         Sensor at x=14, y=17: closest beacon is at x=10, y=16\n\
+         Sensor at x=8, y=7: closest beacon is at x=2, y=10\n\
+         Sensor at x=2, y=0: closest beacon is at x=2, y=10\n\
+         Sensor at x=0, y=11: closest beacon is at x=2, y=10\n\
+         Sensor at x=20, y=14: closest beacon is at x=25, y=17\n\
+         Sensor at x=17, y=20: closest beacon is at x=21, y=22\n\
+         Sensor at x=16, y=7: closest beacon is at x=15, y=3\n\
+         Sensor at x=14, y=3: closest beacon is at x=15, y=3\n\
+         Sensor at x=20, y=1: closest beacon is at x=15, y=3\n";
 
     #[test]
     fn test_part1() {
