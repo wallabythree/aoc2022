@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 #[derive(Debug, Clone, Copy)]
 struct Vertex {
     x: f64,
@@ -16,9 +14,59 @@ impl Vertex {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
+struct LineSegment {
+    slope: f64,
+    constant: f64,
+    x_min: f64,
+    x_max: f64,
+}
+
+impl LineSegment {
+    fn from(a: &Vertex, b: &Vertex) -> Self {
+        let slope = (b.y - a.y) / (b.x - a.x);
+        let constant = a.y - slope * a.x;
+        let x_min = a.x.min(b.x);
+        let x_max = a.x.max(b.x);
+
+        Self { slope, constant, x_min, x_max }
+    }
+
+    fn intersection(&self, other: &Self) -> Option<Vertex> {
+        let (mut left, mut right) = (self.clone(), other.clone());
+
+        if left.slope == other.slope {
+            return None;
+        }
+        
+        left.slope = left.slope - right.slope;
+        right.slope = 0.0;
+
+        right.constant = right.constant - left.constant;
+        left.constant = 0.0;
+
+        let x = right.constant / left.slope;
+    
+        if x < self.x_min - 1e-10 || x > self.x_max + 1e-10 {
+            return None;
+        }
+
+        //let y = self.slope * x + self.constant;
+        let y = self.y_from_x(x);
+
+        println!("intersects in ({}, {})", x, y);
+
+        Some(Vertex { x, y })
+    }
+
+    fn y_from_x(&self, x: f64) -> f64 {
+        self.slope * x + self.constant
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
 struct Square {
-    vertices: [Vertex; 4]
+    vertices: [Vertex; 4],
 }
 
 impl Square {
@@ -30,12 +78,12 @@ impl Square {
                     y: sensor.pos.y as f64 - sensor.beacon_distance() as f64,
                 },
                 Vertex {
-                    x: sensor.pos.x as f64 + sensor.beacon_distance() as f64 + 1.0,
+                    x: sensor.pos.x as f64 + sensor.beacon_distance() as f64,
                     y: sensor.pos.y as f64
                 },
                 Vertex { 
                     x: sensor.pos.x as f64,
-                    y: sensor.pos.y as f64 + sensor.beacon_distance() as f64 + 1.0,
+                    y: sensor.pos.y as f64 + sensor.beacon_distance() as f64,
                 },
                 Vertex {
                     x: sensor.pos.x as f64 - sensor.beacon_distance() as f64,
@@ -43,22 +91,6 @@ impl Square {
                 },
             ]
         }
-    }
-
-    fn right(&self) -> (Vertex, Vertex) {
-        (self.vertices[0], self.vertices[1])
-    }
-
-    fn top(&self) -> (Vertex, Vertex) {
-        (self.vertices[1], self.vertices[2])
-    }
-
-    fn left(&self) -> (Vertex, Vertex) {
-        (self.vertices[2], self.vertices[3])
-    }
-
-    fn bottom(&self) -> (Vertex, Vertex) {
-        (self.vertices[3], self.vertices[0])
     }
 
     fn min_x(&self) -> f64 {
@@ -98,130 +130,59 @@ impl Square {
             .unwrap()
     }
 
-    fn contains(&self, vertex: Vertex) -> bool {
-        // allows for floating point errors
-        vertex.x > self.min_x() + 1e-10
-        && vertex.x < self.max_x() - 1e-10
-        && vertex.y > self.min_y() + 1e-10
-        && vertex.y < self.max_y() - 1e-10
-    }
-
     fn rotate(&mut self, theta: f64) {
         for i in 0..self.vertices.len() {
             self.vertices[i].rotate(theta);
         }
     }
 
-    fn intersections(&self, other: &Self) -> Vec<Vertex> {
-        let mut intersections = vec![];
+    fn contains(&self, vertex: Vertex) -> bool {
+        let mut rotated = self.clone();
+        rotated.rotate(0.25 * std::f64::consts::PI);
 
-        // right top
-        if self.right().0.x >= other.top().1.x
-           && self.right().0.x <= other.top().0.x
-           && other.top().0.y >= self.right().0.y
-           && other.top().0.y <= self.right().1.y {
-            let intersection = Vertex {
-                x: self.right().0.x,
-                y: other.top().0.y,
-            };
+        let mut rv = vertex.clone();
+        rv.rotate(0.25 * std::f64::consts::PI);
 
-            intersections.push(intersection);
-        }
+        rv.x > rotated.vertices[3].x
+            && rv.x < rotated.vertices[0].x
+            && rv.y > rotated.vertices[0].y
+            && rv.y > rotated.vertices[1].y
+        /*
+        let ls = self.line_segments();
 
-        // right bottom
-        if self.right().0.x >= other.bottom().0.x
-           && self.right().0.x <= other.bottom().1.x
-           && other.bottom().0.y >= self.right().0.y
-           && other.bottom().0.y <= self.right().1.y {
-            let intersection = Vertex {
-                x: self.right().0.x,
-                y: other.bottom().0.y,
-            };
-
-            intersections.push(intersection);
-        }
-
-        // top left
-        if self.top().0.y <= other.left().0.y
-           && self.top().0.y >= other.left().1.y
-           && other.left().0.x <= self.top().0.x
-           && other.left().0.x >= self.top().1.x {
-            let intersection = Vertex {
-                x: other.left().0.x,
-                y: self.top().0.y,
-            };
-
-            intersections.push(intersection);
-        }
-
-        // top right
-        if self.top().0.y <= other.right().1.y
-           && self.top().0.y >= other.right().0.y
-           && other.right().0.x <= self.top().0.x
-           && other.right().0.x >= self.top().1.x {
-            let intersection = Vertex {
-                x: other.right().0.x,
-                y: self.top().0.y,
-            };
-
-            intersections.push(intersection);
-        }
-
-        // left top
-        if self.left().0.x >= other.top().1.x
-           && self.left().0.x <= other.top().0.x
-           && other.top().0.y >= self.left().1.y
-           && other.top().0.y <= self.left().0.y {
-            let intersection = Vertex {
-                x: self.left().0.x,
-                y: other.top().0.y,
-            };
-
-            intersections.push(intersection);
-        }
-
-        // left bottom
-        if self.left().0.x >= other.bottom().0.x
-           && self.left().0.x <= other.bottom().1.x
-           && other.bottom().0.y >= self.left().1.y
-           && other.bottom().0.y <= self.left().0.y {
-            let intersection = Vertex {
-                x: self.left().0.x,
-                y: other.bottom().0.y,
-            };
-
-            intersections.push(intersection);
-        }
-
-        // bottom left
-        if self.bottom().0.y <= other.left().0.y
-           && self.bottom().0.y >= other.left().1.y
-           && other.left().0.x <= self.bottom().1.x
-           && other.left().0.x >= self.bottom().0.x {
-            let intersection = Vertex {
-                x: other.left().0.x,
-                y: self.bottom().0.y,
-            };
-
-            intersections.push(intersection);
-        }
-
-        // bottom right
-        if self.bottom().0.y <= other.right().1.y
-           && self.bottom().0.y >= other.right().0.y
-           && other.right().0.x <= self.bottom().1.x
-           && other.right().0.x >= self.bottom().0.x {
-            let intersection = Vertex {
-                x: other.right().0.x,
-                y: self.bottom().0.y,
-            };
-
-            intersections.push(intersection);
-        }
-
-        intersections
+        vertex.y > ls[0].y_from_x(vertex.x)
+        && vertex.y < ls[1].y_from_x(vertex.x)
+        && vertex.y < ls[2].y_from_x(vertex.x)
+        && vertex.y > ls[3].y_from_x(vertex.x)
+        */
     }
 
+    fn line_segments(&self) -> [LineSegment; 4] {
+        [
+            LineSegment::from(&self.vertices[0], &self.vertices[1]),
+            LineSegment::from(&self.vertices[1], &self.vertices[2]),
+            LineSegment::from(&self.vertices[2], &self.vertices[3]),
+            LineSegment::from(&self.vertices[3], &self.vertices[0]),
+        ]
+    }
+
+    fn intersections(&self, other: Square) -> Option<Vec<Vertex>> {
+        let mut intersections = vec![];
+
+        for self_ls in self.line_segments() {
+            for other_ls in other.line_segments() {
+                if let Some(intersection) = self_ls.intersection(&other_ls) {
+                    intersections.push(intersection)
+                }
+            }
+        }
+
+        if intersections.is_empty() {
+            None
+        } else {
+            Some(intersections)
+        }
+    }
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
@@ -317,46 +278,39 @@ pub fn part2(input: &str) -> usize {
         .map(Square::from)
         .collect();
 
-    squares.iter().for_each(|square| println!("{:?}", square));
-
-    for square in squares.iter_mut() {
-        square.rotate(0.25 * std::f64::consts::PI);
-    }
-
-    let mut intersections: Vec<Vertex> = vec![];
-
-    for square in squares.iter() {
-        for square2 in squares.iter() {
-            intersections.append(&mut square.intersections(square2));
-        }
-    }
-
     let domain = Square {
         vertices: [
             Vertex { x: 0.0, y: 0.0 },
-            Vertex { x: 4000000.0, y: 0.0 },
-            Vertex { x: 4000000.0, y: 4000000.0 },
-            Vertex { x: 0.0, y: 4000000.0 },
+            Vertex { x: 0.0, y: 20.0 },
+            Vertex { x: 20.0, y: 20.0 },
+            Vertex { x: 20.0, y: 0.0 },
         ]
     };
 
-    let mut free_intersections: Vec<Vertex> = vec![];
-
-    for intersection in &intersections {
-        if squares.iter().all(|square| !square.contains(*intersection)) {
-            let mut free_intersection = intersection.clone();
-            free_intersection.rotate(-0.25 * std::f64::consts::PI);
-
-            if domain.contains(free_intersection) {
-                free_intersections.push(free_intersection);
+    let mut intersections: Vec<Vertex> = vec![];
+    for square in &squares {
+        for other_square in &squares {
+            if let Some(square_intersections) = square.intersections(*other_square) {
+                square_intersections
+                    .iter()
+                    .for_each(|intersection| {
+                        if /*domain.contains(*intersection) 
+                           &&*/ squares.iter().all(|square| !square.contains(*intersection)) {
+                            intersections.push(intersection.clone());
+                        }
+                    });
             }
         }
     }
 
-    let mut results: HashSet<Coord> = HashSet::new();
+    for intersection in &intersections {
+        if intersection.x >= 0.0 && intersection.x <= 20.0 && intersection.y >= 0.0 && intersection.y <= 20.0 {
+        println!("intersection: {:?}", intersection);
+        }
+    }
 
-    for i in 0..free_intersections.len() {
-        println!("intersection: {:?}", free_intersections[i]);
+    if domain.contains(Vertex { x: 0.1, y: 0.1 }) {
+        println!("boomshakalaka");
     }
 
     0
@@ -382,6 +336,7 @@ Sensor at x=14, y=3: closest beacon is at x=15, y=3
 Sensor at x=20, y=1: closest beacon is at x=15, y=3
 ";
 
+#[ignore]
 #[test]
 fn test_part1() {
     assert_eq!(part1(TEST_INPUT), 26);
