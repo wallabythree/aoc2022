@@ -4,16 +4,6 @@ struct Vertex {
     y: f64,
 }
 
-impl Vertex {
-    fn rotate(&mut self, theta: f64) {
-        let x = self.x * theta.cos() - self.y * theta.sin();
-        let y = self.x * theta.sin() + self.y * theta.cos();
-
-        self.x = x;
-        self.y = y;
-    }
-}
-
 #[derive(Debug, Clone, Copy)]
 struct LineSegment {
     slope: f64,
@@ -47,7 +37,7 @@ impl LineSegment {
 
         let x = right.constant / left.slope;
     
-        if x < self.x_min - 1e-10 || x > self.x_max + 1e-10 {
+        if x < self.x_min || x > self.x_max || x < other.x_min || x > other.x_max {
             return None;
         }
 
@@ -78,12 +68,12 @@ impl Square {
                     y: sensor.pos.y as f64 - sensor.beacon_distance() as f64,
                 },
                 Vertex {
-                    x: sensor.pos.x as f64 + sensor.beacon_distance() as f64,
+                    x: sensor.pos.x as f64 + sensor.beacon_distance() as f64 + 1.0,
                     y: sensor.pos.y as f64
                 },
                 Vertex { 
                     x: sensor.pos.x as f64,
-                    y: sensor.pos.y as f64 + sensor.beacon_distance() as f64,
+                    y: sensor.pos.y as f64 + sensor.beacon_distance() as f64 + 1.0,
                 },
                 Vertex {
                     x: sensor.pos.x as f64 - sensor.beacon_distance() as f64,
@@ -93,68 +83,13 @@ impl Square {
         }
     }
 
-    fn min_x(&self) -> f64 {
-        self
-            .vertices
-            .iter()
-            .map(|vertex| vertex.x)
-            .reduce(|min, cur| if cur < min { cur } else { min })
-            .unwrap()
-    }
-
-    fn max_x(&self) -> f64 {
-        self
-            .vertices
-            .iter()
-            .map(|vertex| vertex.x)
-            .reduce(|max, cur| if cur > max { cur } else { max })
-            .unwrap()
-    }
-
-    fn min_y(&self) -> f64 {
-        self
-            .vertices
-            .iter()
-            .map(|vertex| vertex.y)
-            .reduce(|min, cur| if cur < min { cur } else { min })
-            .unwrap()
-
-    }
-
-    fn max_y(&self) -> f64 {
-        self
-            .vertices
-            .iter()
-            .map(|vertex| vertex.y)
-            .reduce(|max, cur| if cur > max { cur } else { max })
-            .unwrap()
-    }
-
-    fn rotate(&mut self, theta: f64) {
-        for i in 0..self.vertices.len() {
-            self.vertices[i].rotate(theta);
-        }
-    }
-
     fn contains(&self, vertex: Vertex) -> bool {
-        let mut rotated = self.clone();
-        rotated.rotate(0.25 * std::f64::consts::PI);
-
-        let mut rv = vertex.clone();
-        rv.rotate(0.25 * std::f64::consts::PI);
-
-        rv.x > rotated.vertices[3].x
-            && rv.x < rotated.vertices[0].x
-            && rv.y > rotated.vertices[0].y
-            && rv.y > rotated.vertices[1].y
-        /*
         let ls = self.line_segments();
 
         vertex.y > ls[0].y_from_x(vertex.x)
         && vertex.y < ls[1].y_from_x(vertex.x)
         && vertex.y < ls[2].y_from_x(vertex.x)
         && vertex.y > ls[3].y_from_x(vertex.x)
-        */
     }
 
     fn line_segments(&self) -> [LineSegment; 4] {
@@ -294,8 +229,7 @@ pub fn part2(input: &str) -> usize {
                 square_intersections
                     .iter()
                     .for_each(|intersection| {
-                        if /*domain.contains(*intersection) 
-                           &&*/ squares.iter().all(|square| !square.contains(*intersection)) {
+                        if !squares.iter().any(|square| square.contains(*intersection)) {
                             intersections.push(intersection.clone());
                         }
                     });
@@ -318,33 +252,65 @@ pub fn part2(input: &str) -> usize {
 
 #[cfg(test)]
 mod tests {
-use super::{part1, part2};
+    use super::{part1, part2};
 
-const TEST_INPUT: &str = "Sensor at x=2, y=18: closest beacon is at x=-2, y=15
-Sensor at x=9, y=16: closest beacon is at x=10, y=16
-Sensor at x=13, y=2: closest beacon is at x=15, y=3
-Sensor at x=12, y=14: closest beacon is at x=10, y=16
-Sensor at x=10, y=20: closest beacon is at x=10, y=16
-Sensor at x=14, y=17: closest beacon is at x=10, y=16
-Sensor at x=8, y=7: closest beacon is at x=2, y=10
-Sensor at x=2, y=0: closest beacon is at x=2, y=10
-Sensor at x=0, y=11: closest beacon is at x=2, y=10
-Sensor at x=20, y=14: closest beacon is at x=25, y=17
-Sensor at x=17, y=20: closest beacon is at x=21, y=22
-Sensor at x=16, y=7: closest beacon is at x=15, y=3
-Sensor at x=14, y=3: closest beacon is at x=15, y=3
-Sensor at x=20, y=1: closest beacon is at x=15, y=3
-";
+    const TEST_INPUT: &str = "Sensor at x=2, y=18: closest beacon is at x=-2, y=15
+    Sensor at x=9, y=16: closest beacon is at x=10, y=16
+    Sensor at x=13, y=2: closest beacon is at x=15, y=3
+    Sensor at x=12, y=14: closest beacon is at x=10, y=16
+    Sensor at x=10, y=20: closest beacon is at x=10, y=16
+    Sensor at x=14, y=17: closest beacon is at x=10, y=16
+    Sensor at x=8, y=7: closest beacon is at x=2, y=10
+    Sensor at x=2, y=0: closest beacon is at x=2, y=10
+    Sensor at x=0, y=11: closest beacon is at x=2, y=10
+    Sensor at x=20, y=14: closest beacon is at x=25, y=17
+    Sensor at x=17, y=20: closest beacon is at x=21, y=22
+    Sensor at x=16, y=7: closest beacon is at x=15, y=3
+    Sensor at x=14, y=3: closest beacon is at x=15, y=3
+    Sensor at x=20, y=1: closest beacon is at x=15, y=3
+    ";
 
-#[ignore]
-#[test]
-fn test_part1() {
-    assert_eq!(part1(TEST_INPUT), 26);
-}
+    #[ignore]
+    #[test]
+    fn test_part1() {
+        assert_eq!(part1(TEST_INPUT), 26);
+    }
 
-#[test]
-fn test_part2() {
-    assert_eq!(part2(TEST_INPUT), 56000011);
-}
+    //#[ignore]
+    #[test]
+    fn test_part2() {
+        assert_eq!(part2(TEST_INPUT), 56000011);
+    }
+
+    use super::{Vertex, Square};
+    #[test]
+    fn test_square() {
+
+        let square1 = Square { vertices: [
+            Vertex { x: 3.0, y: 0.0 },
+            Vertex { x: 4.0, y: 1.0 },
+            Vertex { x: 3.0, y: 2.0 },
+            Vertex { x: 2.0, y: 1.0 },
+        ] };
+
+        println!("{:?}", square1);
+        println!("{:?}", square1.line_segments());
+        println!("{:?}", square1.contains(Vertex { x: 3.0, y: 1.1 }));
+
+        let square2 = Square { vertices: [
+            Vertex { x: 3.0, y: 1.0 },
+            Vertex { x: 4.0, y: 2.0 },
+            Vertex { x: 3.0, y: 3.0 },
+            Vertex { x: 2.0, y: 2.0 },
+        ] };
+
+        println!("{:?}", square2);
+        println!("{:?}", square2.line_segments());
+        println!("{:?}", square2.contains(Vertex { x: 3.0, y: 1.1 }));
+
+        println!("{:?}", square1.intersections(square2));
+
+        assert_eq!(1, 0);
+    }
 }
 
