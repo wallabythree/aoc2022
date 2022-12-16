@@ -1,5 +1,5 @@
 use core::cmp::Ordering;
-use std::collections::VecDeque;
+use std::collections::HashMap;
 
 /* DOT langauge representation of graph
 digraph G {
@@ -48,40 +48,29 @@ digraph G {
 struct Node {
     value: usize,
     open: bool,
-    edges: Vec<(usize, usize)>
+    edges: Vec<String>
 }
 
 impl Node {
-    fn from(line: &str) -> (Self, (usize, usize)) {
+    fn from(line: &str) -> (Self, &str) {
         let mut parts = line
             .split([' ', '=', ';', ',']);
 
-        let code = parts.nth(1).unwrap().as_bytes();
-        let (y, x) = (
-            (code[0] - b'A') as usize,
-            (code[1] - b'A') as usize
-        );
+        let key = parts.nth(1).unwrap();
 
         let value = parts.nth(3).unwrap().parse().unwrap();
         
-        let mut edges: Vec<(usize, usize)>  = vec![];
+        let mut edges = vec![];
 
         for edge in parts.skip(5) {
             if edge.is_empty() {
                 continue;
             }
 
-            let code = edge.as_bytes();
-
-            let (y, x) = (
-                (code[0] - b'A') as usize,
-                (code[1] - b'A') as usize
-            );
-
-            edges.push((x, y));
+            edges.push(edge.to_owned());
         }
 
-        (Self { value, open: false, edges }, (x, y))
+        (Self { value, open: false, edges }, key)
     }
 }
 
@@ -97,145 +86,31 @@ impl PartialOrd for Node {
     }
 }
 
-#[derive(Debug)]
-struct Map {
-    nodes: [[Option<Node>; 26]; 26]
-}
-
-impl Map {
-    fn bfs(
-        &self,
-        s: (usize, usize),
-        goal: (usize, usize)
-    ) -> Result<usize, ()> {
-
-        let mut visited = [[false; 26]; 26];
-        visited[s.1][s.0] = true;
-
-        let mut queue: VecDeque<((usize, usize), usize)> = VecDeque::new();
-        queue.push_back(((s.1, s.0), 0));
-
-        while let Some(node) = queue.pop_front() {
-            if node.0 == goal {
-                //println!("Found! {:?}", node.0);
-                return Ok(node.1);
-            }
-
-            for edge in self.nodes[node.0.1][node.0.0].clone().unwrap().edges {
-                if !visited[edge.1][edge.0] && edge != node.0 {
-                    queue.push_back(((edge.0, edge.1), node.1 + 1));
-                    visited[edge.1][edge.0] = true;
-                }
-            }
-        }
-
-        Err(())
-    }
-}
-
 pub fn part1(input: &str) -> usize {
-    let nodes: [[Option<Node>; 26]; 26] = Default::default();
-    let mut map = Map { nodes };
+    let mut graph = HashMap::new();
 
-
-    let mut start: Option<(usize, usize)> = None;
+    let mut start: Option<&str> = None;
 
     input
         .trim()
         .lines()
         .map(Node::from)
         .for_each(|node_result| {
-            let (Node, (x, y)) = node_result;
+            let (node, key) = node_result;
 
             if start.is_none() {
-                start = Some((x, y));
+                start = Some(key);
             }
 
-            map.nodes[y][x] = Some(Node);
+            graph.insert(key, node);
         });
 
-    println!("{:?}", map);
+    println!("{:?}", graph);
 
     let mut pos = start.unwrap();
     let mut pressure_released = 0;
     let mut target: Option<(usize, usize)> = None;
 
-    for minute in 1..31 {
-        
-        pressure_released += map
-            .nodes
-            .iter()
-            .map(|row| {
-                row
-                    .iter()
-                    .filter_map(|valve_opt| {
-                        if let Some(valve) = valve_opt {
-                            if valve.open {
-                                Some(valve.value)
-                            } else {
-                                None
-                            }
-                        } else {
-                            None
-                        }
-                    })
-                    .sum::<usize>()
-            })
-            .sum::<usize>();
-
-            if let Some(t) = target {
-                if pos == t {
-                    // open valve
-                    if let Some(target_node) = &mut map.nodes[t.1][t.0] {
-                        target_node.open = true;
-                        target = None;
-                    }
-                } else {
-                    // move towards target
-                    let mut next = (0, 0);
-                    let mut distance = usize::MAX;
-
-                    for edge in map.nodes[pos.1][pos.0].clone().unwrap().edges {
-                        let edge_distance = map.bfs(edge, t).unwrap();
-
-                        if edge_distance < distance {
-                            next = edge;
-                            distance = edge_distance;
-                        }
-                    }
-
-                    pos = next;
-                }
-
-            } else {
-                let mut target_pos: Option<(usize, usize)> = None;
-                let mut top_score = 0.0;
-
-                for y in 0..26 {
-                    for x in 0..26 {
-                        if (x, y) == pos {
-                            continue;
-                        }
-
-                        if let Some(node) = &map.nodes[y][x] {
-                            if !node.open {
-                                let distance = map.bfs(pos, (x,y)).unwrap();
-                                let score = node.value as f64 / distance as f64;
-
-                                if score >= top_score {
-                                    top_score = score;
-                                    target_pos = Some((x, y));
-                                }
-                            }
-                        }
-                    }
-                }
-
-                target = target_pos;
-                println!("{:?}", target_pos);
-            }
-
-    }
 
     pressure_released
 }
