@@ -1,3 +1,6 @@
+#![allow(clippy::too_many_arguments)]
+#![allow(clippy::needless_range_loop)]
+
 use core::cmp::Ordering;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -215,7 +218,7 @@ fn max_flow_with_elephant(
             .unwrap();
         let new_minutes_me = (minutes_to_dst_me + 1).min(26 - minutes_me);
 
-        let mut new_ticks = ticks.clone();
+        let mut new_ticks = ticks;
         for i in minutes_me..(minutes_me + new_minutes_me) {
             new_ticks[i] += pressure_me;
         }
@@ -281,7 +284,7 @@ fn max_flow_with_elephant(
             .unwrap();
         let new_minutes_me = (minutes_to_dst_me + 1).min(26 - minutes_me);
 
-        let mut new_ticks = ticks.clone();
+        let mut new_ticks = ticks;
         for i in minutes_me..(minutes_me + new_minutes_me) {
             new_ticks[i] += pressure_me;
         }
@@ -304,7 +307,7 @@ fn max_flow_with_elephant(
 
             let new_minutes_elephant = (minutes_to_dst_elephant + 1).min(26 - minutes_elephant);
 
-            let mut new_ticks = new_ticks.clone();
+            let mut new_ticks = new_ticks;
             for j in minutes_elephant..(minutes_elephant + new_minutes_elephant) {
                 new_ticks[j] += pressure_elephant;
             }
