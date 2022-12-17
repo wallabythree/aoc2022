@@ -1,4 +1,4 @@
-#[derive(Debug,Clone,Copy)]
+#[derive(Debug,Clone,Copy,PartialEq)]
 enum Shape {
     Minus,
     Plus,
@@ -7,7 +7,7 @@ enum Shape {
     Square
 }
 
-#[derive(Debug,Clone,Copy)]
+#[derive(Debug,Clone,Copy,PartialEq)]
 struct Rock {
     shape: Shape,
     x: i64,
@@ -253,22 +253,33 @@ pub fn part1(input: &str) -> usize {
         }
     }
 
-    /*
-    for row in cave.rows.iter().rev() {
-        print!("|");
-
-        for &square in row {
-            let c = if square { '#' } else { '.' };
-
-            print!("{}", c);
-        }
-
-        println!("|");
-    }
-    println!("+-------+");
-    */
-
     cave.height()
+}
+
+struct Groundhog {
+    rock: Rock,
+    start_i: usize,
+    start_height: usize,
+    end_i: Option<usize>,
+    end_height: Option<usize>
+}
+
+impl Groundhog {
+    fn delta_i(&self) -> Result<usize, ()> {
+        if let Some(end_i) = self.end_i {
+            Ok(end_i - self.start_i)
+        } else {
+            Err(())
+        }
+    }
+
+    fn delta_height(&self) -> Result<usize, ()> {
+        if let Some(end_height) = self.end_height {
+            Ok(end_height - self.start_height)
+        } else {
+            Err(())
+        }
+    }
 }
 
 pub fn part2(input: &str) -> usize {
@@ -278,19 +289,44 @@ pub fn part2(input: &str) -> usize {
 
     let mut cave = Cave { rows: vec![] };
 
-    let mut total_height = 0;
+    let mut groundhog: Option<Groundhog> = None;
 
-    let mut megarock: Option<Rock> = None;
+    let mut i = 0;
 
-    for i in 0..1745 {
+    while groundhog.is_none() || groundhog.as_ref().unwrap().end_i.is_none() {
         let mut rock = rockmaker.make(2, cave.height() as i64 + 3);
 
         loop {
             if jets.len() == 0 {
+                if let Some(hog) = &mut groundhog {
+                    if hog.rock.shape == rock.shape && hog.rock.x == rock.x {
+                        hog.rock = rock;
+                        hog.end_i = Some(i);
+                        hog.end_height = Some(cave.height());
+                        break;
+                    } else if hog.rock.shape == rock.shape {
+                        groundhog = Some(
+                            Groundhog { 
+                                rock,
+                                start_i: i,
+                                start_height: cave.height(),
+                                end_i: None,
+                                end_height: None
+                            });
+                    }
+                } else {
+                    groundhog = Some(
+                        Groundhog { 
+                            rock,
+                            start_i: i,
+                            start_height: cave.height(),
+                            end_i: None,
+                            end_height: None
+                        });
+                }
+
                 jets = jets_input.clone();
                 println!("Groundhog day: {:?} i: {} height: {}", rock, i, cave.height());
-                megarock = Some(rock);
-                break;
             }
 
             let mut moved_rock = rock;
@@ -315,94 +351,27 @@ pub fn part2(input: &str) -> usize {
 
             rock = moved_rock;
         }
+
+        i += 1;
     }
-
-    let mut i = 1744usize;
-
 
     println!("first i: {} height: {}", i, cave.height());
 
-    loop {
-        //if i + 1745 >= 3489usize {
-        if i + 1745 >= 1000000000000usize {
-            break;
-        }
+    let count = (1000000000000usize - i) / groundhog.as_ref().unwrap().delta_i().unwrap();
+    let total_height = count * groundhog.as_ref().unwrap().delta_height().unwrap();
 
-        //println!("boom!");
-        i += 1745;
-        total_height += 2749 + 29;
-        
+    i += count * groundhog.as_ref().unwrap().delta_i().unwrap();
 
-        /*
-        let mut rock = rockmaker.make(2, cave.height() as i64 + 3);
-
-        loop {
-            if jets.len() == 0 {
-                println!("Groundhog day: shape: {:?} i: {} height: {}", rock.shape, i, cave.height());
-
-                jets = jets_input.clone();
-            }
-
-            let mut moved_rock = rock;
-
-            moved_rock.x = match jets.next().unwrap() {
-                b'<' => moved_rock.x - 1,
-                b'>' => moved_rock.x + 1,
-                _ => panic!()
-            };
-
-            if cave.collides(&moved_rock) {
-                moved_rock = rock;
-            }
-
-            moved_rock.y -= 1;
-
-            if cave.collides(&moved_rock) {
-                moved_rock.y += 1;
-                cave.add(&moved_rock);
-                break;
-            }
-
-            rock = moved_rock;
-        }
-
-
-        for i in 0..cave.height() {
-            if !cave.rows[i].contains(&false) {
-                total_height += 1;
-                cave.rows = cave.rows[i + 1..].to_vec();
-                break;
-            }
-        }
-        */
-    }
-
-    /*
-    for row in cave.rows.iter().rev() {
-        print!("|");
-
-        for &square in row {
-            let c = if square { '#' } else { '.' };
-
-            print!("{}", c);
-        }
-
-        println!("|");
-    }
-    println!("+-------+");
-    */
-
-    //total_height
     println!("i: {} height: {}", i, total_height);
 
     //while i < 3489usize {
     while i < 1000000000000usize {
-        let mut rock = if let Some(megarock) = megarock {
-            megarock
+        let mut rock = if let Some(hog) = groundhog {
+            hog.rock
         } else {
             rockmaker.make(2, cave.height() as i64 + 3)
         };
-        megarock = None;
+        groundhog = None;
 
         loop {
             if jets.len() == 0 {
