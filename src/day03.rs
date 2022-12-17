@@ -5,9 +5,9 @@ trait Priority {
 impl Priority for u8 {
     fn priority(&self) -> u8 {
         if self.is_ascii_lowercase() {
-            *self as u8 - b'a' + 1
+            *self - b'a' + 1
         } else {
-            *self as u8 - b'A' + 27
+            *self - b'A' + 27
         }
     }
 }
