@@ -19,6 +19,17 @@ impl<'a> Grid<'a> {
         Self { rows, cols }
     }
 
+    fn is_visible(&self, x: usize, y: usize) -> bool {
+        let tree = self.rows[y][x];
+
+        x == 0 || x == self.rows.len() - 1
+        || y == 0 || y == self.cols.len() - 1
+        || self.rows[y][..x].iter().all(|&neighbour| tree > neighbour) 
+        || self.rows[y][(x + 1)..].iter().all(|&neighbour| tree > neighbour)
+        || self.cols[x][..y].iter().all(|&neighbour| tree > neighbour)
+        || self.cols[x][(y + 1)..].iter().all(|&neighbour| tree > neighbour)
+    }
+
     fn score(&self, x: usize, y: usize) -> usize {
         let tree = &self.rows[y][x];
 
@@ -49,57 +60,18 @@ impl<'a> Grid<'a> {
 
 pub fn part1(input: &str) -> usize {
     let grid = Grid::new(input);
-    let (rows, cols) = (grid.rows, grid.cols);
 
-    let row_count = rows.first().unwrap().len();
-    let col_count = cols.first().unwrap().len();
+    let mut visible = 0;
 
-    let mut visible = vec![vec![false; col_count]; row_count];
-
-    for (y, row) in rows.iter().enumerate() {
-        let mut local_max = 0u8;
-
-        for (x, &tree) in row.iter().enumerate() {
-            if tree > local_max {
-                visible[y][x] = true;
-                local_max = tree;
-            }
-        }
-
-        local_max = 0u8;
-
-        for (x, &tree) in row.iter().enumerate().rev() {
-            if tree > local_max {
-                visible[y][x] = true;
-                local_max = tree;
-            }
-        }
-    }
-
-    for (x, col) in cols.iter().enumerate() {
-        let mut local_max = 0u8;
-
-        for (y, &tree) in col.iter().enumerate() {
-            if tree > local_max {
-                visible[y][x] = true;
-                local_max = tree;
-            }
-        }
-
-        local_max = 0u8;
-
-        for (y, &tree) in col.iter().enumerate().rev() {
-            if tree > local_max || local_max == 0 {
-                visible[y][x] = true;
-                local_max = tree;
+    for y in 0..grid.rows.len() {
+        for x in 0..grid.rows.len() {
+            if grid.is_visible(x, y) {
+                visible += 1;
             }
         }
     }
 
     visible
-        .iter()
-        .map(|row| row.iter().filter(|&tree| *tree).count())
-        .sum()
 }
 
 pub fn part2(input: &str) -> usize {
