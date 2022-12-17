@@ -165,7 +165,6 @@ fn max_flow_with_elephant(
      // base case
     if (minutes_me >= 26 && minutes_elephant >= 26) || to_visit.is_empty() {
 
-        let mut new_ticks = ticks.clone();
         for i in minutes_me..26 {
             ticks[i] += pressure_me;
         }
@@ -173,7 +172,7 @@ fn max_flow_with_elephant(
             ticks[i] += pressure_elephant;
         }
 
-        let total = new_ticks.iter().sum();
+        let total = ticks.iter().sum();
 
         if total > *max {
             *max = total;
@@ -184,8 +183,26 @@ fn max_flow_with_elephant(
         return;
     }
 
+    //for dst in to_visit.iter() {
     if to_visit.len() == 1 {
         let dst = to_visit.iter().next().unwrap();
+
+        if minutes_me >= 26 && minutes_elephant >= 26 {
+            max_flow_with_elephant(
+                graph,
+                distances,
+                dst,
+                elephant,
+                to_visit.clone(),
+                minutes_me,
+                minutes_elephant,
+                pressure_me,
+                pressure_elephant,
+                ticks,
+                max
+            );
+        }
+
         let node = &graph.get(dst).unwrap();
 
         let mut remaining = to_visit.clone();
@@ -198,24 +215,27 @@ fn max_flow_with_elephant(
             .unwrap();
         let new_minutes_me = (minutes_to_dst_me + 1).min(26 - minutes_me);
 
-        let mut me_ticks = ticks.clone();
+        let mut new_ticks = ticks.clone();
         for i in minutes_me..(minutes_me + new_minutes_me) {
-            me_ticks[i] += pressure_me + node.value;
+            new_ticks[i] += pressure_me;
         }
 
-        max_flow_with_elephant(
-            graph,
-            distances,
-            dst,
-            elephant,
-            remaining.clone(),
-            minutes_me + new_minutes_me,
-            minutes_elephant,
-            pressure_me + node.value,
-            pressure_elephant,
-            me_ticks,
-            max
-        );
+
+        if new_minutes_me > 0 {
+            max_flow_with_elephant(
+                graph,
+                distances,
+                dst,
+                elephant,
+                remaining.clone(),
+                minutes_me + new_minutes_me,
+                minutes_elephant,
+                pressure_me + node.value,
+                pressure_elephant,
+                new_ticks,
+                max
+            );
+        }
 
         let minutes_to_dst_elephant = distances
             .get(elephant)
@@ -225,24 +245,26 @@ fn max_flow_with_elephant(
 
         let new_minutes_elephant = (minutes_to_dst_elephant + 1).min(26 - minutes_elephant);
 
-        let mut elephant_ticks = ticks.clone();
-        for i in minutes_elephant..(minutes_elephant + new_minutes_elephant) {
-            elephant_ticks[i] += node.value;
+        let mut ticks_elephant = ticks;
+        for j in minutes_elephant..(minutes_elephant + new_minutes_elephant) {
+            ticks_elephant[j] += pressure_elephant;
         }
 
-        max_flow_with_elephant(
-            graph,
-            distances,
-            me,
-            dst,
-            remaining,
-            minutes_me,
-            minutes_elephant + new_minutes_elephant,
-            pressure_me,
-            pressure_elephant + node.value,
-            elephant_ticks,
-            max
-        );
+        if new_minutes_elephant > 0 {
+            max_flow_with_elephant(
+                graph,
+                distances,
+                me,
+                dst,
+                remaining,
+                minutes_me,
+                minutes_elephant + new_minutes_elephant,
+                pressure_me,
+                pressure_elephant + node.value,
+                ticks_elephant,
+                max
+            );
+        }
     }
 
     // recursive case
@@ -261,7 +283,7 @@ fn max_flow_with_elephant(
 
         let mut new_ticks = ticks.clone();
         for i in minutes_me..(minutes_me + new_minutes_me) {
-            ticks[i] += pressure_me;
+            new_ticks[i] += pressure_me;
         }
 
         for dst_elephant in remaining.iter() {
@@ -284,7 +306,7 @@ fn max_flow_with_elephant(
 
             let mut new_ticks = new_ticks.clone();
             for j in minutes_elephant..(minutes_elephant + new_minutes_elephant) {
-                ticks[j] += pressure_elephant;
+                new_ticks[j] += pressure_elephant;
             }
 
 
