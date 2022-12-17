@@ -1,4 +1,4 @@
-#[derive(Debug,Clone,Copy,PartialEq)]
+#[derive(Clone,Copy,PartialEq)]
 enum Shape {
     Minus,
     Plus,
@@ -7,7 +7,7 @@ enum Shape {
     Square
 }
 
-#[derive(Debug,Clone,Copy,PartialEq)]
+#[derive(Clone,Copy,PartialEq)]
 struct Rock {
     shape: Shape,
     x: i64,
@@ -187,15 +187,11 @@ impl Cave {
             },
             Shape::Plus => {
                 rows[rock_y][rock_x + 1] = true;
-
                 rows[rock_y + 1][rock_x..rock_x + rock.width()].fill(true);
-
                 rows[rock_y + 2][rock_x + 1] = true;
             },
             Shape::MirrorL => {
-                // check rock's bottom row against grid
                 rows[rock_y][rock_x..rock_x + rock.width()].fill(true);
-
                 rows[rock_y + 1][rock_x + 2] = true;
                 rows[rock_y + 2][rock_x + 2] = true;
             },
@@ -243,6 +239,7 @@ pub fn part1(input: &str) -> usize {
 
             moved_rock.y -= 1;
 
+            // if rock can't drop any further, add rock to cave
             if cave.collides(&moved_rock) {
                 moved_rock.y += 1;
                 cave.add(&moved_rock);
@@ -285,10 +282,9 @@ impl Groundhog {
 pub fn part2(input: &str) -> usize {
     let jets_input = input.trim().as_bytes().iter();
     let mut jets = jets_input.clone();
+
     let mut rockmaker = RockMaker { prev: None };
-
     let mut cave = Cave { rows: vec![] };
-
     let mut groundhog: Option<Groundhog> = None;
 
     let mut i = 0;
@@ -297,36 +293,44 @@ pub fn part2(input: &str) -> usize {
         let mut rock = rockmaker.make(2, cave.height() as i64 + 3);
 
         loop {
+            // check if we have run out of jets
             if jets.len() == 0 {
+
                 if let Some(hog) = &mut groundhog {
+                    // if we have already found a groundhog, check if we can use
+                    // the current rock as an offset and store the amount of
+                    // iterations it took to get here and the difference in 
+                    // stack height
                     if hog.rock.shape == rock.shape && hog.rock.x == rock.x {
                         hog.rock = rock;
                         hog.end_i = Some(i);
                         hog.end_height = Some(cave.height());
                         break;
                     } else if hog.rock.shape == rock.shape {
-                        groundhog = Some(
-                            Groundhog { 
-                                rock,
-                                start_i: i,
-                                start_height: cave.height(),
-                                end_i: None,
-                                end_height: None
-                            });
-                    }
-                } else {
-                    groundhog = Some(
-                        Groundhog { 
+                        // something has gone wrong, the shape matches but
+                        // the x coordinate doesn't. never mind, take this
+                        // rock as groundhog instead
+                        groundhog = Some(Groundhog { 
                             rock,
                             start_i: i,
                             start_height: cave.height(),
                             end_i: None,
                             end_height: None
                         });
+                    }
+                } else {
+                    // if we hadn't yet picked a groundhog, use this one 
+                    groundhog = Some(Groundhog {
+                        rock,
+                        start_i: i,
+                        start_height: cave.height(),
+                        end_i: None,
+                        end_height: None
+                    });
                 }
 
+                // get a new iterator over our jets
                 jets = jets_input.clone();
-                println!("Groundhog day: {:?} i: {} height: {}", rock, i, cave.height());
             }
 
             let mut moved_rock = rock;
@@ -355,16 +359,15 @@ pub fn part2(input: &str) -> usize {
         i += 1;
     }
 
-    println!("first i: {} height: {}", i, cave.height());
+    let groundhog = groundhog.unwrap();
 
-    let count = (1000000000000usize - i) / groundhog.as_ref().unwrap().delta_i().unwrap();
-    let total_height = count * groundhog.as_ref().unwrap().delta_height().unwrap();
+    let count = (1000000000000usize - i) / groundhog.delta_i().unwrap();
+    let skipped_height = count * groundhog.delta_height().unwrap();
 
-    i += count * groundhog.as_ref().unwrap().delta_i().unwrap();
+    i += count * groundhog.delta_i().unwrap() - 1;
 
-    println!("i: {} height: {}", i, total_height);
+    let mut groundhog = Some(groundhog);
 
-    //while i < 3489usize {
     while i < 1000000000000usize {
         let mut rock = if let Some(hog) = groundhog {
             hog.rock
@@ -404,17 +407,14 @@ pub fn part2(input: &str) -> usize {
         i += 1;
     }
 
-    println!("i: {} height: {}", i, total_height + cave.height());
-    
-    total_height + cave.height()
+    cave.height() + skipped_height
 }
 
 #[cfg(test)]
 mod tests {
     use super::{part1, part2};
 
-    const TEST_INPUT: &str = ">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>
-        ";
+    const TEST_INPUT: &str = ">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>\n";
 
     #[test]
     fn test_part1() {
