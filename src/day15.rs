@@ -68,20 +68,20 @@ impl Square {
         Self {
             vertices: [
                 Vertex { 
-                    x: sensor.pos.x as f64,
-                    y: sensor.pos.y as f64 - sensor.beacon_distance() as f64 - 1.0,
+                    x: sensor.pos.x,
+                    y: sensor.pos.y - sensor.beacon_distance() as f64 - 1.0,
                 },
                 Vertex {
-                    x: sensor.pos.x as f64 + sensor.beacon_distance() as f64 + 1.0,
-                    y: sensor.pos.y as f64
+                    x: sensor.pos.x + sensor.beacon_distance() as f64 + 1.0,
+                    y: sensor.pos.y
                 },
                 Vertex { 
-                    x: sensor.pos.x as f64,
-                    y: sensor.pos.y as f64 + sensor.beacon_distance() as f64 + 1.0,
+                    x: sensor.pos.x,
+                    y: sensor.pos.y + sensor.beacon_distance() as f64 + 1.0,
                 },
                 Vertex {
-                    x: sensor.pos.x as f64 - sensor.beacon_distance() as f64 - 1.0,
-                    y: sensor.pos.y as f64
+                    x: sensor.pos.x - sensor.beacon_distance() as f64 - 1.0,
+                    y: sensor.pos.y
                 },
             ]
         }

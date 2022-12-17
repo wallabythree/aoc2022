@@ -1,3 +1,6 @@
+#![allow(clippy::int_plus_one)]
+#![allow(clippy::needless_range_loop)]
+
 #[derive(Clone,Copy,PartialEq)]
 enum Shape {
     Minus,
