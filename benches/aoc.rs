@@ -18,6 +18,7 @@ use solutions::{
     day13,
     day14,
     day15,
+    day16,
     day17,
     day18,
 };
@@ -277,6 +278,22 @@ fn criterion_benchmark(c: &mut Criterion) {
         "day15part2",
         |b| {
             b.iter(|| day15::part2(black_box(&input)))
+        }
+    );
+
+    input = client.get(2022, 16).unwrap();
+
+    c.bench_function(
+        "day16part1",
+        |b| {
+            b.iter(|| day16::part1(black_box(&input)))
+        }
+    );
+
+    c.bench_function(
+        "day16part2",
+        |b| {
+            b.iter(|| day16::part2(black_box(&input)))
         }
     );
 
