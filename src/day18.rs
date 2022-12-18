@@ -31,7 +31,7 @@ impl Cube {
     fn from(input: &str) -> Self {
         let pos: Vec<i64> = input
             .split(',')
-            .map(|num| num.parse().unwrap())
+            .map(|num| num.parse::<i64>().unwrap() + 1)
             .collect();
 
         Self { x: pos[0], y: pos[1], z: pos[2] }
@@ -74,7 +74,7 @@ impl Cube {
 
 fn bfs(cubes: &[Cube]) -> usize {
     let root = Cube { x: 0, y: 0, z: 0 };
-    let mut visited = [[[false; 30]; 30]; 30];
+    let mut visited = [[[false; 24]; 24]; 24];
 
     let mut queue: VecDeque<Cube> = VecDeque::new();
     queue.push_back(root);
@@ -82,8 +82,12 @@ fn bfs(cubes: &[Cube]) -> usize {
     let mut side_count = 0;
 
     while let Some(cube) = queue.pop_front() {
-        for side in cube.sides() {
-            side_count += cubes.iter().filter(|other_cube| other_cube.sides().contains(&side)).count();
+        for side in &cube.sides() {
+            for other_cube in cubes {
+                if other_cube.sides().contains(side) {
+                    side_count += 1;
+                }
+            }
         }
 
         let mut in_front = cube;
@@ -108,7 +112,7 @@ fn bfs(cubes: &[Cube]) -> usize {
 
         for next in adjacent_cubes {
             if next.x >= 0 && next.y >= 0 && next.z >= 0
-               && next.x < 30 && next.y < 30 && next.z < 30
+               && next.x < 24 && next.y < 24 && next.z < 24
                && !cubes.contains(&next)
                && !visited[next.z as usize][next.y as usize][next.x as usize] {
                    visited[next.z as usize][next.y as usize][next.x as usize] = true;
@@ -151,163 +155,7 @@ pub fn part2(input: &str) -> usize {
         .split('\n')
         .map(Cube::from)
         .collect();
-/*
-    let exposed_sides: Vec<Side> = cubes
-        .iter()
-        .flat_map(|cube| {
-             cube
-                .sides()
-                .iter()
-                .filter(|side| {
-                    cubes
-                        .iter()
-                        .all(|other_cube|{
-                            other_cube == cube
-                            || !other_cube.sides().contains(side)
-                        })
-                })
-                .copied()
-                .collect::<Vec<Side>>()
-        })
-        .collect();
 
-    let all_sides: Vec<Side> = cubes
-        .iter()
-        .flat_map(|cube| cube.sides())
-        .collect();
-
-    let all_vertices: Vec<Vertex> = cubes
-        .iter()
-        .flat_map(|cube| {
-            cube
-                .sides()
-                .iter()
-                .flat_map(|side| side.vertices).collect::<Vec<Vertex>>()
-        })
-        .collect();
-
-    let air_pockets: Vec<_> = exposed_sides
-        .iter()
-        .filter(|side| {
-            side
-                .vertices
-                .iter()
-                .all(|v| {
-                    let mut neighbour_count = 0;
-
-                    for x in -30..0 {
-                        let possible_neighbour = Vertex { x: v.x + x, y: v.y, z: v.z };
-                        if all_vertices.contains(&possible_neighbour) {
-                            neighbour_count += 1;
-                            break;
-                        }
-                    }
-
-                    for x in 1..30 {
-                        let possible_neighbour = Vertex { x: v.x + x, y: v.y, z: v.z };
-                        if all_vertices.contains(&possible_neighbour) {
-                            neighbour_count += 1;
-                            break;
-                        }
-                    }
-
-                    for y in -30..0 {
-                        let possible_neighbour = Vertex { x: v.x, y: v.y + y, z: v.z };
-                        if all_vertices.contains(&possible_neighbour) {
-                            neighbour_count += 1;
-                            break;
-                        }
-                    }
-
-                    for y in 1..30 {
-                        let possible_neighbour = Vertex { x: v.x, y: v.y + y, z: v.z };
-                        if all_vertices.contains(&possible_neighbour) {
-                            neighbour_count += 1;
-                            break;
-                        }
-                    }
-
-                    for z in -30..0 {
-                        let possible_neighbour = Vertex { x: v.x, y: v.y, z: v.z + z};
-                        if all_vertices.contains(&possible_neighbour) {
-                            neighbour_count += 1;
-                            break;
-                        }
-                    }
-
-                    for z in 1..30 {
-                        let possible_neighbour = Vertex { x: v.x, y: v.y, z: v.z + z };
-                        if all_vertices.contains(&possible_neighbour) {
-                            neighbour_count += 1;
-                            break;
-                        }
-                    }
-
-                    // check if candidate has opposite side
-                    if neighbour_count == 6 {
-                        let mut dir_x = 0;
-                        let mut dir_y = 0;
-                        let mut dir_z = 0;
-
-                        match side.face {
-                            Face::Front => dir_x = 1,
-                            Face::Rear => dir_x = -1,
-                            Face::Left => dir_y = -1,
-                            Face::Right => dir_y = 1,
-                            Face::Top => dir_z = 1,
-                            Face::Bottom => dir_z = -1,
-                        }
-
-                        for i in 1..30i64 {
-                            let opposite = Side {
-                                vertices: [
-                                    Vertex { 
-                                        x: side.vertices[0].x + dir_x * i,
-                                        y: side.vertices[0].y + dir_y * i,
-                                        z: side.vertices[0].z + dir_z * i
-                                    },
-                                    Vertex { 
-                                        x: side.vertices[1].x + dir_x * i,
-                                        y: side.vertices[1].y + dir_y * i,
-                                        z: side.vertices[1].z + dir_z * i
-                                    },
-                                    Vertex { 
-                                        x: side.vertices[2].x + dir_x * i,
-                                        y: side.vertices[2].y + dir_y * i,
-                                        z: side.vertices[2].z + dir_z * i
-                                    },
-                                    Vertex { 
-                                        x: side.vertices[3].x + dir_x * i,
-                                        y: side.vertices[3].y + dir_y * i,
-                                        z: side.vertices[3].z + dir_z * i
-                                    },
-                                ],
-                                face: side.face,
-                            };
-
-                            /*
-                            for j in 0..4 {
-                                opposite.vertices[j].x += dir_x * i;
-                                opposite.vertices[j].y += dir_y * i;
-                                opposite.vertices[j].z += dir_z * i;
-                            }
-                            */
-                            
-                            if all_sides.contains(&opposite) {
-                                return true;
-                            }
-                        }
-                    }
-                    
-                    false
-                })
-        })
-        .collect();
-
-
-        println!("exposed sides: {}, air pocket sides: {}", exposed_sides.len(), air_pockets.len());
-        exposed_sides.len() - air_pockets.len()
-            */
     bfs(&cubes)
 }
 
