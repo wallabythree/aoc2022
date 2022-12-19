@@ -44,7 +44,7 @@ impl World {
             self.robots[i] += 1;
         }
 
-        if self.time > 1 {
+        if self.time > 2 {
             let mut geodes_from_worlds = [0, 0, 0, 0, 0];
 
             for (i, robot_costs) in self.costs.iter().enumerate() {
@@ -54,7 +54,9 @@ impl World {
                        continue;
                 }
 
-                if robot_costs[0] > self.time + 1 {
+                if i == 0 && robot_costs[0] >= self.time + 1 {
+                    continue;
+                } else if i == 2 && self.time == 3 {
                     continue;
                 }
 
@@ -70,8 +72,19 @@ impl World {
             geodes_from_worlds[4] = self.clone().tick(None);
 
             return *geodes_from_worlds.iter().max().unwrap();
+
+        } else if self.time == 2 {
+
+            let mut last_robot = None;
+
+            if self.resources[0] >= self.costs[3][0]
+               && self.resources[2] >= self.costs[3][2] {
+                last_robot = Some(3)
+            }
+
+            return self.clone().tick(last_robot);
         } else {
-            self.clone().tick(None)
+            return self.clone().tick(None);
         }
     }
 }
