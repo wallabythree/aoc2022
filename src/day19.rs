@@ -191,11 +191,13 @@ mod tests {
                               costs 3 ore and 8 clay. Each geode robot costs \
                               3 ore and 12 obsidian.\n";
 
+    #[ignore]
     #[test]
     fn test_part1() {
         assert_eq!(part1(TEST_INPUT), 33);
     }
     
+    #[ignore]
     #[test]
     fn test_part2() {
         assert_eq!(part2(TEST_INPUT), 56);
