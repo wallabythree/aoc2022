@@ -6,11 +6,12 @@ struct World {
     robots: [i64; 4],
     resources: [i64; 4],
     time: i64,
+    queued: Option<usize>,
 }
 
 impl World {
     fn new(costs: [[i64; 3]; 4], time: i64) -> Self {
-        Self { costs, robots: [1, 0, 0, 0], resources: [0; 4], time }
+        Self { costs, robots: [1, 0, 0, 0], resources: [0; 4], time, queued: None }
     }
 
     fn mine_resources(&mut self) {
@@ -19,7 +20,20 @@ impl World {
         }
     }
 
-    fn tick(&mut self, new_robot: Option<usize>) -> i64 {
+    fn can_afford(&self, kind: usize) -> bool {
+        self.resources[0] >= self.costs[kind][0]
+        && self.resources[1] >= self.costs[kind][1]
+        && self.resources[2] >= self.costs[kind][2]
+    }
+
+    fn build(&mut self, kind: usize) {
+        self.resources[0] -= self.costs[kind][0];
+        self.resources[1] -= self.costs[kind][1];
+        self.resources[2] -= self.costs[kind][2];
+        self.queued = Some(kind);
+    }
+
+    fn tick(&mut self) -> i64 {
         //if self.time < 7 && self.robots[3] < 1 {
         //    return 0;
         //}
@@ -31,7 +45,7 @@ impl World {
         // base case
         if self.time == 0 {
             //if self.resources[3] >= 12 {
-            //    println!("tick! {:?}", self);
+                //println!("tick! {:?}", self);
             //}
 
             return self.resources[3];
@@ -40,10 +54,45 @@ impl World {
         self.mine_resources();
         self.time -= 1;
         
-        if let Some(i) = new_robot {
+        if let Some(i) = self.queued {
             self.robots[i] += 1;
+            self.queued = None;
         }
 
+        if self.time > 1 {
+            if self.can_afford(3) {
+                self.build(3);
+            } else if self.time > 3 {
+                let mut geodes_from_worlds = [0, 0, 0, 0, 0];
+
+                for i in 0..3 {
+                    if i == 0 && self.costs[i][0] >= self.time + 1 {
+                        continue;
+                    } else if i == 1 && self.time <= 5 {
+                        continue;
+                    }
+
+                    if !self.can_afford(i) {
+                        continue;
+                    }
+
+                    let mut new_world = self.to_owned();
+                    new_world.build(i);
+                    
+                    geodes_from_worlds[i] = new_world.tick();
+                }
+
+                geodes_from_worlds[4] = self.tick();
+
+                return *geodes_from_worlds.iter().max().unwrap();
+            }
+        }
+
+        return self.tick();
+    }
+}
+
+        /*
         if self.time > 3 {
             let mut geodes_from_worlds = [0, 0, 0, 0, 0];
 
@@ -87,8 +136,7 @@ impl World {
         } else {
             return self.clone().tick(None);
         }
-    }
-}
+    }*/
 
 #[derive(Debug)]
 struct Blueprint {
@@ -114,7 +162,7 @@ impl Blueprint {
     fn simulate(&self, time: i64) -> i64 {
         let mut world = World::new(self.costs, time);
 
-        let geodes = world.tick(None);
+        let geodes = world.tick();
 
         //println!("{:?}", world);
 
