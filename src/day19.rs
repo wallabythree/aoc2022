@@ -5,12 +5,12 @@ struct World {
     costs: [[i64; 3]; 4],
     robots: [i64; 4],
     resources: [i64; 4],
-    time: i64,
+    time: usize,
     queued: Option<usize>,
 }
 
 impl World {
-    fn new(costs: [[i64; 3]; 4], time: i64) -> Self {
+    fn new(costs: [[i64; 3]; 4], time: usize) -> Self {
         Self { costs, robots: [1, 0, 0, 0], resources: [0; 4], time, queued: None }
     }
 
@@ -33,7 +33,7 @@ impl World {
         self.queued = Some(kind);
     }
 
-    fn tick(&mut self) -> i64 {
+    fn tick(&mut self, max: &mut [i64]) -> i64 {
         //if self.time < 7 && self.robots[3] < 1 {
         //    return 0;
         //}
@@ -53,6 +53,11 @@ impl World {
 
         self.mine_resources();
         self.time -= 1;
+
+        if max[self.time] > self.resources[3] {
+            return 0;
+        }
+        max[self.time] = self.resources[3];
         
         if let Some(i) = self.queued {
             self.robots[i] += 1;
@@ -63,12 +68,12 @@ impl World {
             if self.can_afford(3) {
                 self.build(3);
             } else if self.time > 3 {
-                let mut geodes_from_worlds = [0, 0, 0, 0, 0];
+                let mut geodes_from_worlds = [0, 0, 0, 0];
 
                 for i in 0..3 {
-                    if i == 0 && self.costs[i][0] >= self.time + 1 {
-                        continue;
-                    } else if i == 1 && self.time <= 5 {
+                    if i == 0 && self.costs[i][0] >= self.time as i64 + 1
+                       || i == 1 && self.time <= 5 {
+                       // || i == 2 && self.time * (self.robots[2] + 
                         continue;
                     }
 
@@ -79,16 +84,16 @@ impl World {
                     let mut new_world = self.to_owned();
                     new_world.build(i);
                     
-                    geodes_from_worlds[i] = new_world.tick();
+                    geodes_from_worlds[i] = new_world.tick(max);
                 }
 
-                geodes_from_worlds[4] = self.tick();
+                geodes_from_worlds[3] = self.tick(max);
 
                 return *geodes_from_worlds.iter().max().unwrap();
             }
         }
 
-        return self.tick();
+        return self.tick(max);
     }
 }
 
@@ -159,10 +164,11 @@ impl Blueprint {
         Self { id, costs }
     }
 
-    fn simulate(&self, time: i64) -> i64 {
+    fn simulate(&self, time: usize) -> i64 {
         let mut world = World::new(self.costs, time);
+        let mut max = vec![0i64; time];
 
-        let geodes = world.tick();
+        let geodes = world.tick(&mut max);
 
         //println!("{:?}", world);
 
