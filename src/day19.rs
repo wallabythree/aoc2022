@@ -1,3 +1,5 @@
+use std::thread;
+
 #[derive(Debug,Clone,Copy)]
 struct World {
     costs: [[i64; 3]; 4],
@@ -7,8 +9,8 @@ struct World {
 }
 
 impl World {
-    fn new(costs: [[i64; 3]; 4]) -> Self {
-        Self { costs, robots: [1, 0, 0, 0], resources: [0; 4], time: 0 }
+    fn new(costs: [[i64; 3]; 4], time: i64) -> Self {
+        Self { costs, robots: [1, 0, 0, 0], resources: [0; 4], time }
     }
 
     fn mine_resources(&mut self) {
@@ -18,16 +20,16 @@ impl World {
     }
 
     fn tick(&mut self, new_robot: Option<usize>) -> i64 {
-        //if self.time > 17 && self.robots[3] < 1 {
-        //    return 0;
-        //}
-
-        if ((24 - self.time) * self.robots[0] + self.resources[0] < self.costs[3][0]) && self.robots[3] == 0 {
+        if self.time < 7 && self.robots[3] < 1 {
             return 0;
         }
 
+        //if ((24 - self.time) * self.robots[0] + self.resources[0] < self.costs[3][0]) && self.robots[3] == 0 {
+        //    return 0;
+        //}
+
         // base case
-        if self.time >= 24 {
+        if self.time == 0 {
             //if self.resources[3] >= 12 {
             //    println!("tick! {:?}", self);
             //}
@@ -36,14 +38,14 @@ impl World {
         }
 
         self.mine_resources();
-        self.time += 1;
+        self.time -= 1;
         
         if let Some(i) = new_robot {
             self.robots[i] += 1;
         }
 
 
-        if self.time < 23 {
+        if self.time > 0 {
             let mut geodes_from_worlds = [0, 0, 0, 0, 0];
 
             for (i, robot_costs) in self.costs.iter().enumerate() {
@@ -92,8 +94,8 @@ impl Blueprint {
         Self { id, costs }
     }
 
-    fn simulate(&self) -> i64 {
-        let mut world = World::new(self.costs);
+    fn simulate(&self, time: i64) -> i64 {
+        let mut world = World::new(self.costs, time);
 
         let geodes = world.tick(None);
 
@@ -112,7 +114,7 @@ pub fn part1(input: &str) -> usize {
     let mut quality_levels = 0;
 
     for blueprint in blueprints {
-        let geodes = blueprint.simulate() as usize;
+        let geodes = blueprint.simulate(24) as usize;
         let quality_level = blueprint.id * geodes;
 
         quality_levels += quality_level;
@@ -124,7 +126,33 @@ pub fn part1(input: &str) -> usize {
 }
 
 pub fn part2(input: &str) -> usize {
-    input.len()
+    let mut blueprints: Vec<_> = input
+        .lines()
+        .map(Blueprint::from)
+        .collect();
+
+    blueprints.truncate(3);
+
+    let mut handles = vec![];
+
+    for blueprint in blueprints {
+        let handle = thread::spawn(move || {
+            let geodes = blueprint.simulate(32) as usize;
+            println!("{:?} geodes: {}", blueprint, geodes);
+
+            geodes
+        });
+
+        handles.push(handle);
+    }
+
+    let mut geode_product = 1;
+
+    for handle in handles {
+        geode_product *= handle.join().unwrap();
+    }
+
+    geode_product
 }
 
 #[cfg(test)]
@@ -135,6 +163,7 @@ mod tests {
 Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 8 clay. Each geode robot costs 3 ore and 12 obsidian.
 ";
 
+    #[ignore]
     #[test]
     fn test_part1() {
         assert_eq!(part1(TEST_INPUT), 33);
@@ -142,7 +171,7 @@ Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsid
     
     #[test]
     fn test_part2() {
-        assert_eq!(part2(TEST_INPUT), TEST_INPUT.len());
+        assert_eq!(part2(TEST_INPUT), 56);
     }
 }
 
