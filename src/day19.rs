@@ -66,8 +66,13 @@ impl World {
             } else if self.time > 3 {
                 let mut geodes_from_worlds = [0, 0, 0, 0];
 
-                for i in 0..3 {
-                    if i == 0 && self.costs[i][0] >= self.time as i64 + 1
+                let geodes_iter = geodes_from_worlds
+                    .iter_mut()
+                    .enumerate()
+                    .take(3);
+
+                for (i, geodes) in geodes_iter {
+                    if i == 0 && self.costs[i][0] > self.time as i64
                        || i == 1 && self.time <= 5 {
                         continue;
                     }
@@ -79,7 +84,7 @@ impl World {
                     let mut new_world = self.to_owned();
                     new_world.build(i);
                     
-                    geodes_from_worlds[i] = new_world.tick(max);
+                    *geodes = new_world.tick(max);
                 }
 
                 geodes_from_worlds[3] = self.tick(max);
@@ -88,7 +93,7 @@ impl World {
             }
         }
 
-        return self.tick(max);
+        self.tick(max)
     }
 }
 
