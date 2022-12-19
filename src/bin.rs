@@ -1,6 +1,6 @@
 use std::env;
 
-use solutions::day19::{part1, part2};
+use solutions::day20::{part1, part2};
 
 fn main() {
     let session_key = env::var("AOC_SESSION").unwrap();
