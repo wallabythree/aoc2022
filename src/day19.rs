@@ -20,9 +20,9 @@ impl World {
     }
 
     fn tick(&mut self, new_robot: Option<usize>) -> i64 {
-        if self.time < 7 && self.robots[3] < 1 {
-            return 0;
-        }
+        //if self.time < 7 && self.robots[3] < 1 {
+        //    return 0;
+        //}
 
         //if ((24 - self.time) * self.robots[0] + self.resources[0] < self.costs[3][0]) && self.robots[3] == 0 {
         //    return 0;
@@ -44,8 +44,7 @@ impl World {
             self.robots[i] += 1;
         }
 
-
-        if self.time > 0 {
+        if self.time > 1 {
             let mut geodes_from_worlds = [0, 0, 0, 0, 0];
 
             for (i, robot_costs) in self.costs.iter().enumerate() {
@@ -53,6 +52,10 @@ impl World {
                    || self.resources[1] < robot_costs[1]
                    || self.resources[2] < robot_costs[2] {
                        continue;
+                }
+
+                if robot_costs[0] > self.time + 1 {
+                    continue;
                 }
 
                 let mut new_world = self.to_owned();
@@ -111,15 +114,25 @@ pub fn part1(input: &str) -> usize {
         .map(Blueprint::from)
         .collect();
 
-    let mut quality_levels = 0;
+    let mut handles = vec![];
 
     for blueprint in blueprints {
-        let geodes = blueprint.simulate(24) as usize;
-        let quality_level = blueprint.id * geodes;
+        let handle = thread::spawn(move || {
+            let geodes = blueprint.simulate(24) as usize;
+            let quality_level = blueprint.id * geodes;
 
-        quality_levels += quality_level;
+            println!("{:?} geodes: {} quality level: {}", blueprint, geodes, quality_level);
 
-        println!("{:?} geodes: {} quality level: {}", blueprint, geodes, quality_level);
+            quality_level
+        });
+
+        handles.push(handle);
+    }
+
+    let mut quality_levels = 0;
+
+    for handle in handles {
+        quality_levels += handle.join().unwrap();
     }
 
     quality_levels
@@ -163,7 +176,6 @@ mod tests {
 Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 8 clay. Each geode robot costs 3 ore and 12 obsidian.
 ";
 
-    #[ignore]
     #[test]
     fn test_part1() {
         assert_eq!(part1(TEST_INPUT), 33);
