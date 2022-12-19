@@ -34,4 +34,5 @@ day | part1 | part2 | part1 (optimised) | part2 (optimised)
 16 | 2.97 s | about 70 minutes | | 
 17 | 1.66 ms | 6.24 ms | | 
 18 | 290.92 ms | 1.05 s | | 
+19 | 8.52 s | 35.86 s | | 
 
