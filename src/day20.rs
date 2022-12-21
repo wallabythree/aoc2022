@@ -10,7 +10,10 @@ pub fn part1(input: &str) -> i64 {
     let coordinates: Vec<Coordinate> = input
         .lines()
         .enumerate()
-        .map(|(pos, coordinate)| Coordinate { pos, val: coordinate.parse().unwrap() } )
+        .map(|(pos, coordinate)| Coordinate { 
+            pos,
+            val: coordinate.parse().unwrap()
+        })
         .collect();
 
     let mut new_coordinates = coordinates.clone();
@@ -33,7 +36,10 @@ pub fn part1(input: &str) -> i64 {
         new_coordinates.insert(new_pos, *coordinate);
     }
 
-    let zero_pos = new_coordinates.iter().position(|coord| coord.val == 0).unwrap();
+    let zero_pos = new_coordinates
+        .iter()
+        .position(|coord| coord.val == 0)
+        .unwrap();
 
     new_coordinates[(zero_pos + 1000).rem_euclid(new_coordinates.len())].val
     + new_coordinates[(zero_pos + 2000).rem_euclid(new_coordinates.len())].val
