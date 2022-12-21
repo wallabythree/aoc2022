@@ -75,6 +75,7 @@ impl Monkey {
         }
     }
 
+    #[allow(clippy::unnecessary_unwrap)]
     fn solve_for(
         &self,
         table: &HashMap<String, Monkey>,
@@ -90,9 +91,9 @@ impl Monkey {
                     table.get(&o.operand2)
                 );
 
-                if left.is_some() && left.unwrap().val(&table).is_ok() {
+                if left.is_some() && left.unwrap().val(table).is_ok() {
 
-                    let left = left.unwrap().val(&table).unwrap();
+                    let left = left.unwrap().val(table).unwrap();
 
                     let val = match o.operator {
                         Operator::Addition => val - left,
@@ -110,9 +111,9 @@ impl Monkey {
                         .unwrap()
                         .solve_for(table, variable, val)
 
-                } else if right.is_some() && right.unwrap().val(&table).is_ok() {
+                } else if right.is_some() && right.unwrap().val(table).is_ok() {
 
-                    let right = right.unwrap().val(&table).unwrap();
+                    let right = right.unwrap().val(table).unwrap();
 
                     let val = match o.operator {
                         Operator::Addition => val - right,
