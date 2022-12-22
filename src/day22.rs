@@ -61,16 +61,16 @@ impl Board {
             let d_x = pawn.dir.cos() as i64;
             let d_y = pawn.dir.sin() as i64;
 
-            let mut y = (pawn.y as i64 + d_y)
+            let mut y = (pawn.y + d_y)
                 .rem_euclid(tiles.len() as i64);
-            let mut x = (pawn.x as i64 + d_x)
+            let mut x = (pawn.x + d_x)
                 .rem_euclid(tiles[y as usize].len() as i64);
 
             let mut next_tile = tiles[y as usize][x as usize];
 
             while next_tile == b' ' {
-                y = (y as i64 + d_y).rem_euclid(tiles.len() as i64) ;
-                x = (x as i64 + d_x).rem_euclid(tiles[y as usize].len() as i64);
+                y = (y + d_y).rem_euclid(tiles.len() as i64) ;
+                x = (x + d_x).rem_euclid(tiles[y as usize].len() as i64);
                 next_tile = tiles[y as usize][x as usize];
             }
 
@@ -94,8 +94,8 @@ impl Board {
             let d_x = pawn.dir.cos() as i64;
             let d_y = pawn.dir.sin() as i64;
 
-            let mut x = pawn.x as i64 + d_x;
-            let mut y = pawn.y as i64 + d_y;
+            let mut x = pawn.x + d_x;
+            let mut y = pawn.y + d_y;
 
             let mut dir = pawn.dir;
 
