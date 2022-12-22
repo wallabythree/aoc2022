@@ -1,11 +1,11 @@
 use std::env;
 
-use solutions::day21::{part1, part2};
+use solutions::day22::{part1, part2};
 
 fn main() {
     let session_key = env::var("AOC_SESSION").unwrap();
     let client = rudolf_rs::Client::new(session_key);
-    let input = client.get(2022, 21).unwrap();
+    let input = client.get(2022, 22).unwrap();
 
     println!("{}", part1(&input));
     println!("{}", part2(&input));
