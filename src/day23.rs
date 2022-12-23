@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
+type Rule = fn(&Board, (i64, i64)) -> Option<(i64, i64)>;
+
 struct Board {
     elves: HashSet<(i64, i64)>,
     rules: Vec<Rule>,
     rounds: usize,
 }
-
-type Rule = fn(&Board, (i64, i64)) -> Option<(i64, i64)>;
 
 impl Board {
     fn from(input: &str) -> Self {
@@ -162,15 +162,13 @@ pub fn part2(input: &str) -> usize {
 
     let mut prev_round = board.elves.clone();
     board.play_round();
-    let mut rounds = 1;
 
     while board.elves != prev_round {
         prev_round = board.elves.clone();
         board.play_round();
-        rounds += 1;
     }
 
-    rounds
+    board.rounds
 }
 
 #[cfg(test)]
