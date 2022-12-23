@@ -162,15 +162,13 @@ pub fn part2(input: &str) -> usize {
 
     let mut prev_round = board.elves.clone();
     board.play_round();
-    let mut rounds = 1;
 
     while board.elves != prev_round {
         prev_round = board.elves.clone();
         board.play_round();
-        rounds += 1;
     }
 
-    rounds
+    board.rounds
 }
 
 #[cfg(test)]
