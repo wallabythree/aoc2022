@@ -80,15 +80,12 @@ impl Grid {
         Self { start, end, width, height, blizzards, blizzard_cache }
     }
 
-    fn height(&self) -> usize {
-        (self.end.1 - self.start.1) as usize + 1
-    }
-
+    // are we still on the map or have we hit a wall?
     fn within_bounds(&self, square: (i64, i64)) -> bool {
-        !(square.0 < 1
-            || square.0 > self.width as i64 - 2
-            || (square.1 < 1 && square != self.start)
-            || (square.1 > self.height() as i64 - 2 && square != self.end))
+        square.0 > 0
+            && square.0 < self.width as i64 - 1
+            && (square.1 > 0 || square == self.start)
+            && (square.1 < self.height as i64 - 1 || square == self.end)
     }
 
     fn traverse(
@@ -111,6 +108,7 @@ impl Grid {
                 return Ok(node.1);
             }
 
+            // determine next minute's blizzards, if we haven't already done so
             if let Vacant(e) = self.blizzard_cache.entry(node.1 + 1) {
                 let mut next_blizzards = HashSet::new();
 
