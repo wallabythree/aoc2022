@@ -1,7 +1,8 @@
+use std::collections::HashMap;
+use std::collections::hash_map::Entry::Vacant;
 use std::collections::HashSet;
 use std::collections::VecDeque;
 
-#[derive(Debug)]
 enum Direction {
     Up,
     Down,
@@ -9,7 +10,6 @@ enum Direction {
     Right
 }
 
-#[derive(Debug)]
 struct Blizzard {
     start: (i64, i64),
     direction: Direction,
@@ -26,12 +26,13 @@ impl Blizzard {
     }
 }
 
-#[derive(Debug)]
 struct Grid {
     start: (i64, i64),
     end: (i64, i64),
     width: usize,
+    height: usize,
     blizzards: Vec<Blizzard>,
+    blizzard_cache: HashMap<usize, HashSet<(i64, i64)>>
 }
 
 impl Grid {
@@ -47,6 +48,7 @@ impl Grid {
         );
 
         let width = rows.first().unwrap().len();
+        let height = (end.1 - start.1) as usize + 1;
 
         let mut blizzards = vec![];
 
@@ -73,7 +75,9 @@ impl Grid {
             }
         }
 
-        Self { start, end, width, blizzards }
+        let blizzard_cache = HashMap::new();
+
+        Self { start, end, width, height, blizzards, blizzard_cache }
     }
 
     fn height(&self) -> usize {
@@ -94,24 +98,33 @@ impl Grid {
         start_minute: usize
     ) -> Result<usize, ()> {
 
+        let start_node = (start, start_minute);
+
         let mut queue: VecDeque<((i64, i64), usize)> = VecDeque::new();
-        queue.push_back((start, start_minute));
+        queue.push_back(start_node);
+
+        let mut visited = HashSet::new();
+        visited.insert(start_node);
 
         while let Some(node) = queue.pop_front() {
             if node.0 == end {
                 return Ok(node.1);
             }
 
-            let mut next_blizzards = HashSet::new();
+            if let Vacant(e) = self.blizzard_cache.entry(node.1 + 1) {
+                let mut next_blizzards = HashSet::new();
 
-            for blizzard in &self.blizzards {
-                let mut blizzard_pos = blizzard.pos(node.1 + 1);
+                for blizzard in &self.blizzards {
+                    let mut blizzard_pos = blizzard.pos(node.1 + 1);
 
-                blizzard_pos.0 = (blizzard_pos.0 - 1)
-                    .rem_euclid(self.width as i64 - 2) + 1;
-                blizzard_pos.1 = (blizzard_pos.1 - 1)
-                    .rem_euclid(self.height() as i64 - 2) + 1;
-                next_blizzards.insert(blizzard_pos);
+                    blizzard_pos.0 = (blizzard_pos.0 - 1)
+                        .rem_euclid(self.width as i64 - 2) + 1;
+                    blizzard_pos.1 = (blizzard_pos.1 - 1)
+                        .rem_euclid(self.height as i64 - 2) + 1;
+                    next_blizzards.insert(blizzard_pos);
+                }
+
+                e.insert(next_blizzards);
             }
 
             let wait = (node.0, node.1 + 1);
@@ -124,9 +137,14 @@ impl Grid {
 
             for next in next_nodes.iter() {
                 if self.within_bounds(next.0)
-                   && !next_blizzards.contains(&next.0)
-                   && !queue.contains(next) {
+                   && !visited.contains(next)
+                   && !self
+                       .blizzard_cache
+                       .get(&next.1)
+                       .unwrap()
+                       .contains(&next.0) {
                     queue.push_back(*next);
+                    visited.insert(*next);
                 }
             }
         }
