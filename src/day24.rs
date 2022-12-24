@@ -142,6 +142,7 @@ pub fn part1(input: &str) -> usize {
     mountain.traverse(mountain.start, mountain.end, 0).unwrap()
 }
 
+#[allow(clippy::let_and_return)]
 pub fn part2(input: &str) -> usize {
     let mut mountain = Grid::from(input);
 
