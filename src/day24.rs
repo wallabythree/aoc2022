@@ -151,7 +151,6 @@ impl Grid {
     }
 }
 
-
 pub fn part1(input: &str) -> usize {
     let mut mountain = Grid::from(input);
 
