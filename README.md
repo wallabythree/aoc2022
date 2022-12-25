@@ -40,4 +40,5 @@ day | part1 | part2 | part1 (optimised) | part2 (optimised)
 22 | 244.70 µs | 303.73 µs | | 
 23 | 8.60 ms | 844.86 ms | | 
 24 | 108.47 ms | 294.27 ms | | 
+25 | 9.92 µs | | | 
 
