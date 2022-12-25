@@ -440,13 +440,6 @@ fn criterion_benchmark(c: &mut Criterion) {
             b.iter(|| day25::part1(black_box(&input)))
         }
     );
-
-    c.bench_function(
-        "day25part2",
-        |b| {
-            b.iter(|| day25::part2(black_box(&input)))
-        }
-    );
 }
 
 criterion_group!{
