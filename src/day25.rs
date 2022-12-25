@@ -14,7 +14,7 @@ pub fn part1(input: &str) -> String {
                         '1' => 1,
                         '2' => 2,
                         _ => panic!(),
-                    }) * 5i64.pow(i as u32) as i64
+                    }) * 5i64.pow(i as u32)
                 })
                 .sum::<i64>()
         })
